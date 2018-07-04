@@ -1,0 +1,22 @@
+0  - TRANSPORT_NUMBER   - номер т/с
+1  - VCPAYER            - плательщик
+2  - P_NAME             - выписываемый груз
+3  - DOC_NETTO          - нетто
+4  - K_NAME             - перевозчик
+5  - ST_NAME            - место погрузки
+6  - VCRECIVER          - грузополучатель
+7  - VCUPLOADINGPOINT   - пункт разгрузки
+8  - TO_NAME            - тип операции
+9  - VCTRANSPPAYER      - заказчик
+10 - VCSENDER           - грузоотправитель
+11 - INVOICE            - номер ТТН
+12 - FIRST_WEIGHT_DATE  - дата первого взвешивания
+13 - FIRST_WEIGHT_TIME  - время первого взвешивания
+14 - SECOND_WEIGHT_DATE - дата второго взвешивания
+15 - SECOND_WEIGHT_TIME - время второго взвешивания
+16 - TR_TYPE            - марка машины
+17 - ID                 - ID записи
+18 - VCCARGOMARK        - качество груза
+19 - TP_NAME            - тип груза
+20 - STATUS             - статус взвешивания
+21 - S_NAME             - контрагент

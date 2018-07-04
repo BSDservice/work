@@ -25,7 +25,7 @@ SECRET_KEY = 'owy9-00diuix)-z0qxh@i7257b2v^_d#a-))2zn7su)nf#jc0v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'donstone.pythonanywhere.com']  # donstone.pythonanywhere.com donstone Fktrcfylh88
 
 
 # Application definition
@@ -55,7 +55,7 @@ ROOT_URLCONF = 'vesy.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,7 +69,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'vesy.wsgi.application'
-
+CSRF_COOKIE_SECURE = False
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'Europe/Moscow'
 
@@ -119,3 +119,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
