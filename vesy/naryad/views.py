@@ -29,7 +29,7 @@ def data_sync(request):
             return JsonResponse(ans)
         elif request.GET.get('type') == 'get_weights':
             records = Record.objects.all()
-            ans = {'weights': {i.wesy_id: i.status for i in records}}
+            ans = {'weights': {i.wesy_id: int(i.status) for i in records}}
             return JsonResponse(ans)
         else:
             return HttpResponse('Синхронизация прервана(1)')
@@ -100,6 +100,7 @@ def records_sync(data):
     Сверяет отгруженный объем по заданию и меняет статус задания если объём вывезен.
     Вносит изменения в выделенный объём перевозчику.
     """
+    print(data)
     n = 0
     for wesy_id, rec in data['weights'].items():
         n += 1

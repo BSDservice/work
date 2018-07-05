@@ -117,7 +117,7 @@ def sync_data(cursor, file):
 
 
 def sync_weights(cursor, file,
-                 start_date=datetime.datetime.now() - datetime.timedelta(hours=1),
+                 start_date=datetime.datetime.now() - datetime.timedelta(days=1),
                  end_date=datetime.datetime.now() + datetime.timedelta(hours=1)):
     cursor.execute("""SELECT TRANSPORT_NUMBER, VCPAYER, P_NAME, DOC_NETTO, K_NAME, ST_NAME, VCRECIVER, VCUPLOADINGPOINT, 
                              TO_NAME, VCTRANSPPAYER, VCSENDER, INVOICE, FIRST_WEIGHT_DATE, FIRST_WEIGHT_TIME, SECOND_WEIGHT_DATE, SECOND_WEIGHT_TIME,
@@ -133,11 +133,11 @@ def sync_weights(cursor, file,
     cast_types_for_json(data)
     r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
     response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
+    print(response)
     records = dict()
-    print(response['weights'])
-    print(data)
     records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
     records['delete'] = [i for i in response['weights'].keys() if int(i) not in [j[15] for j in data]]
+    # print(records)
 
     """
     for i in response['weights']:
