@@ -29,7 +29,7 @@ def data_sync(request):
             return JsonResponse(ans)
         elif request.GET.get('type') == 'get_weights':
             records = Record.objects.all()
-            ans = {'weights': [{i.wesy_id: i.status} for i in records]}
+            ans = {'weights': {i.wesy_id: i.status for i in records}}
             return JsonResponse(ans)
         else:
             return HttpResponse('Синхронизация прервана(1)')
@@ -174,17 +174,15 @@ def records_sync(data):
             pass
 
     for i in data['delete']:
-        print(i)
-        for j in i.keys():
-            d = Record.objects.get(wesy_id=j)
-            d.task.shipped -= d.weight
-            try:
-                a = AllocatedVolume.objects.get(task=d.task, carrier=d.carrier)
-                a.shipped -= d.weight
-                a.save()
-            except ObjectDoesNotExist:
-                pass
-            d.save()
-            d.delete()
+        d = Record.objects.get(wesy_id=i)
+        d.task.shipped -= d.weight
+        try:
+            a = AllocatedVolume.objects.get(task=d.task, carrier=d.carrier)
+            a.shipped -= d.weight
+            a.save()
+        except ObjectDoesNotExist:
+            pass
+        d.save()
+        d.delete()
 
     return n, len(data['delete'])
