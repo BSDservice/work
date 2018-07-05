@@ -9,20 +9,20 @@ class Task(models.Model):
     consignor = models.ForeignKey('Consignor', on_delete=models.CASCADE, verbose_name='грузоотправитель')
     destination = models.ForeignKey('Destination', on_delete=models.CASCADE, verbose_name='пункт назначения')
     place = models.ForeignKey('Place', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='место погрузки')
-    total_plan = models.SmallIntegerField(verbose_name='общий объем')
-    daily_plan = models.SmallIntegerField(verbose_name='суточный объем')
+    total_plan = models.SmallIntegerField(verbose_name='общий объем', null=True)
+    daily_plan = models.SmallIntegerField(verbose_name='суточный объем', null=True)
     TASK_STATUS = (
-        ('1', 'черновик'),
-        ('2', 'к выполнению'),
-        ('3', 'выполнено'),
+        (1, 'черновик'),
+        (2, 'к выполнению'),
+        (3, 'выполнено'),
     )
-    shipped = models.FloatField(verbose_name='отгружено по заданию')
-    price = models.SmallIntegerField(verbose_name='цена')
+    shipped = models.FloatField(verbose_name='отгружено по заданию', default=0)
+    price = models.SmallIntegerField(verbose_name='цена', null=True)
     status = models.CharField(max_length=1, choices=TASK_STATUS, default=1, help_text='статус задания')
-    author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    author = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
     rubble = models.ForeignKey('Rubble', on_delete=models.CASCADE, verbose_name='выписываемый материал')
-    hours = models.CharField(max_length=20, verbose_name='Часы приема')
-    comments = models.CharField(max_length=200, verbose_name='Комментарий')
+    hours = models.CharField(max_length=20, verbose_name='Часы приема', null=True)
+    comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True)
 
 
 class Record(models.Model):
@@ -58,10 +58,11 @@ class Record(models.Model):
 class Car(models.Model):
     brand = models.CharField(max_length=20, verbose_name='марка', null=True, blank=True)
     num = models.CharField(max_length=20, verbose_name='гос.номер', unique=True, null=True)
+    carrier = models.ForeignKey('Carrier', on_delete=models.CASCADE, null=True)
 
 
 class Organization(models.Model):
-    name = models.CharField(max_length=100, verbose_name='название', null=True, blank=True, unique=True)
+    name = models.CharField(max_length=100, verbose_name='название', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
 
     class Meta:
@@ -128,5 +129,6 @@ class AllocatedVolume(models.Model):
     task = models.ForeignKey(Task, verbose_name='задание', on_delete=models.CASCADE)
     carrier = models.ForeignKey(Carrier, on_delete=models.CASCADE, verbose_name='перевозчик')
     weight = models.SmallIntegerField(verbose_name='объем')
+    shipped = models.FloatField(verbose_name='отгружено', null=True)
 
 

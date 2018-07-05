@@ -119,42 +119,43 @@ def sync_data(cursor, file):
 def sync_weights(cursor, file,
                  start_date=datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=10),
                  end_date=datetime.datetime.now() + datetime.timedelta(hours=1)):
-    try:
-        cursor.execute("""SELECT TRANSPORT_NUMBER, VCPAYER, P_NAME, DOC_NETTO, K_NAME, ST_NAME, VCRECIVER, VCUPLOADINGPOINT, 
-                                  TO_NAME, VCTRANSPPAYER, VCSENDER, INVOICE, FIRST_WEIGHT_DATE, FIRST_WEIGHT_TIME, SECOND_WEIGHT_DATE, SECOND_WEIGHT_TIME,
-                                  TR_TYPE, W.ID, VCCARGOMARK, TP_NAME, W.STATUS, S_NAME
-                          FROM weights_sel (0, ?, ?) w             
-                            LEFT JOIN ttndata t ON t.idweights = w.id 
-                            LEFT JOIN subcontractors s ON s.id = t.ireciverid
-                            LEFT JOIN dictval dv2 ON dv2.idictid = t.iuploadingpointsid AND  dv2.istpdictvalid = 50 AND  dv2.istpdictid = 16
-                          WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Договор 1', 'Машпром', 'Обуховский щебзавод')""",
-                       (start_date, end_date))
-        data = cursor.fetchall()
-        data = list(map(list, data))
-        cast_types_for_json(data)
-    except Exception as error:
-        print('Выгрузка записей прервана, ошибка: {0}'.format(error.with_traceback(error.__traceback__)), file=file)
+    cursor.execute("""SELECT TRANSPORT_NUMBER, VCPAYER, P_NAME, DOC_NETTO, K_NAME, ST_NAME, VCRECIVER, VCUPLOADINGPOINT, 
+                             TO_NAME, VCTRANSPPAYER, VCSENDER, INVOICE, FIRST_WEIGHT_DATE, FIRST_WEIGHT_TIME, SECOND_WEIGHT_DATE, SECOND_WEIGHT_TIME,
+                             TR_TYPE, W.ID, VCCARGOMARK, TP_NAME, W.STATUS, S_NAME
+                      FROM weights_sel (0, ?, ?) w             
+                       LEFT JOIN ttndata t ON t.idweights = w.id 
+                       LEFT JOIN subcontractors s ON s.id = t.ireciverid
+                       LEFT JOIN dictval dv2 ON dv2.idictid = t.iuploadingpointsid AND  dv2.istpdictvalid = 50 AND  dv2.istpdictid = 16
+                       WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Договор 1', 'Машпром', 'Обуховский щебзавод')""",
+                   (start_date, end_date))
+    data = cursor.fetchall()
+    data = list(map(list, data))
+    cast_types_for_json(data)
     r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
     response = json.loads(r.text)  # словарь {'weights':[{ID записи: статус}, ...]} на WEB сервере
     records = dict()
     records['weights'] = {i[15]: i for i in data if i[15] not in response['weights'] or
                           response['weights'][i[15]]['status'] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
-    records['delete'] = [i for i in response['weights'] if i not in [j[15] for j in data]]
+    records['delete'] = [i for i in response['weights'] if i.keys() not in [j[15] for j in data]]
 
     r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                       data=json.dumps(records))
+    print(r.text)
     print(r.text, file=file)
 
 
 def cast_types_for_json(lst):
     """приведение списка из локальной базы к формату передачи JSON"""
     for rec in lst:
-        rec[3] = str(rec[3]) if not None else None
-        rec[12] = str(datetime.datetime.combine(rec[12], rec[13]))
+        if rec[3] is not None:
+            rec[3] = float(rec[3])
+        else:
+            rec[3] = 0
+        rec[12] = (rec[12].year, rec[12].month, rec[12].day, rec[13].hour, rec[13].minute, rec[13].second, rec[13].microsecond)
         if rec[14] is None:
             rec[13] = None
         else:
-            rec[13] = str(datetime.datetime.combine(rec[14], rec[15]))
+            rec[13] = (rec[14].year, rec[14].month, rec[14].day, rec[15].hour, rec[15].minute, rec[15].second, rec[15].microsecond)
         del rec[14], rec[14]
 
 
