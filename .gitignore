@@ -1,5 +1,4 @@
 *.pyc
 *.rar
 /.idea
-db.sqlite3
 vesy/naryad/migrations/*
