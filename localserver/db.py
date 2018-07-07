@@ -126,7 +126,7 @@ def sync_weights(cursor, file,
                        LEFT JOIN ttndata t ON t.idweights = w.id 
                        LEFT JOIN subcontractors s ON s.id = t.ireciverid
                        LEFT JOIN dictval dv2 ON dv2.idictid = t.iuploadingpointsid AND  dv2.istpdictvalid = 50 AND  dv2.istpdictid = 16
-                       WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Договор 1', 'Машпром', 'Обуховский щебзавод')""",
+                       WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Машпром', 'Обуховский щебзавод')""",
                    (start_date, end_date))
     data = cursor.fetchall()
     data = list(map(list, data))
@@ -168,7 +168,7 @@ def cast_types_for_json(lst):
 if __name__ == '__main__':
     with open('data.log', 'a') as log:
         print('START : {}'.format(str(datetime.datetime.now())), file=log)
-        con = fdb.connect(host='localhost',
+        con = fdb.connect(host='192.168.1.200',
                           database='C:\\Documents and Settings\\All Users\\Application Data\\NAIS\\WeightRoom43s\\Database\\WEIGHTROOM_2018.FDB',
                           user='SYSDBA',
                           password='masterkey', sql_dialect=3, charset='WIN1251')

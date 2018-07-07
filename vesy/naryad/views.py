@@ -60,6 +60,7 @@ def save_data(data):
                 'RubbleQuality': RubbleQuality,
                 'Destination': Destination,
                 'Place': Place}
+    for tab in data: data[tab].append([0,'неопределённый'])
     n = 0
     for tab, recs in data.items():
         for item in recs:
@@ -100,7 +101,6 @@ def records_sync(data):
     Сверяет отгруженный объем по заданию и меняет статус задания если объём вывезен.
     Вносит изменения в выделенный объём перевозчику.
     """
-    print(data)
     n = 0
     for wesy_id, rec in data['weights'].items():
         n += 1
@@ -109,15 +109,18 @@ def records_sync(data):
         except ObjectDoesNotExist:
             car = Car(num=rec[0], brand=[14])
             car.save()
-
-        contractor = Contractor.objects.get(name=rec[19])
-        rubble = Rubble.objects.get(name=rec[2])
-        consignee = Consignee.objects.get(name=rec[6])
-        destination = Destination.objects.get(name=rec[7])
-        employer = Employer.objects.get(name=rec[9])
-        consignor = Consignor.objects.get(name=rec[10])
-        carrier = Carrier.objects.get(name=rec[4])
-        place = Place.objects.get(name=rec[5])
+        
+        contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
+        rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "неопределённый")
+        consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "неопределённый")
+        try:
+            destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "неопределённый")
+        except ObjectDoesNotExist:
+            print(rec)
+        employer = Employer.objects.get(name=rec[9] if rec[9] is not None else "неопределённый")
+        consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "неопределённый")
+        carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "неопределённый")
+        place = Place.objects.get(name=rec[5] if rec[5] is not None else "неопределённый")
 
         try:
             task = Task.objects.get(contractor=contractor, consignee=consignee, destination=destination,
@@ -176,7 +179,8 @@ def records_sync(data):
 
     for i in data['delete']:
         d = Record.objects.get(wesy_id=i)
-        d.task.shipped -= d.weight
+        if d.task is not None:
+            d.task.shipped -= d.weight
         try:
             a = AllocatedVolume.objects.get(task=d.task, carrier=d.carrier)
             a.shipped -= d.weight

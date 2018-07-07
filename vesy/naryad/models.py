@@ -23,6 +23,9 @@ class Task(models.Model):
     rubble = models.ForeignKey('Rubble', on_delete=models.CASCADE, verbose_name='выписываемый материал')
     hours = models.CharField(max_length=20, verbose_name='Часы приема', null=True)
     comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True)
+    
+    def __str__(self):
+        return 'контрагент: {}; груз: {}; отгружено {}; пункт разгрузки{}'.format(self.contractor, self.rubble, self.shipped, self.destination)
 
 
 class Record(models.Model):
@@ -53,6 +56,8 @@ class Record(models.Model):
     )
     status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
+    def __str__(self):
+        return 'контрагент: {}; груз: {}; пункт разгрузки{}'.format(self.contractor, self.rubble, self.destination)
 
 
 class Car(models.Model):
@@ -65,9 +70,13 @@ class Organization(models.Model):
     name = models.CharField(max_length=100, verbose_name='название', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         abstract = True
 
+    
 
 class Contractor(Organization):
     """Контрагент, SUBCONTRACTOR"""
@@ -99,6 +108,9 @@ class Rubble(models.Model):
     name = models.CharField(max_length=100, verbose_name='наименование груза', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class RubbleRoot(models.Model):
     """TYPES_OF_PRODUCTS"""
@@ -116,6 +128,9 @@ class Destination(models.Model):
     """UPLOADINGPOINTS"""
     name = models.CharField(max_length=200, verbose_name='пункт разгрузки', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
+
+    def __str__(self):
+        return self.name
 
 
 class Place(models.Model):
