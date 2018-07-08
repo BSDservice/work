@@ -42,9 +42,10 @@ def data_sync(request):
             return HttpResponse('Синхронизация прошла успешно\nВнесено записей:{0}, удалено: {1}'.format(str(n), str(d)))
         elif request.META['HTTP_USER_AGENT'] == 'my-app/0.0.1' and request.META['HTTP_TYPE'] == 'post_records':
             records = json.loads(request.body.decode('utf-8'))
-            n, d = records_sync(records)
+            n = records_sync(records)
+            print(Record.objects.filter(status=1).count())
             return HttpResponse(
-                'Синхронизация прошла успешно\nВнесено записей:{0}, удалено: {1}'.format(str(n), str(d)))
+                'Синхронизация прошла успешно\nВнесено записей:{0}'.format(str(n)))
         else:
             return HttpResponse('Синхронизация прервана(2)')
     else:
@@ -108,15 +109,12 @@ def records_sync(data):
             car = Car.objects.get(num=rec[0])
         except ObjectDoesNotExist:
             car = Car(num=rec[0], brand=[14])
-            car.save()
-        
+            car.save(rec)
+        print(rec)
         contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
         rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "неопределённый")
         consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "неопределённый")
-        try:
-            destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "неопределённый")
-        except ObjectDoesNotExist:
-            print(rec)
+        destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "неопределённый")
         employer = Employer.objects.get(name=rec[9] if rec[9] is not None else "неопределённый")
         consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "неопределённый")
         carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "неопределённый")
@@ -177,17 +175,4 @@ def records_sync(data):
         except ObjectDoesNotExist:
             pass
 
-    for i in data['delete']:
-        d = Record.objects.get(wesy_id=i)
-        if d.task is not None:
-            d.task.shipped -= d.weight
-        try:
-            a = AllocatedVolume.objects.get(task=d.task, carrier=d.carrier)
-            a.shipped -= d.weight
-            a.save()
-        except ObjectDoesNotExist:
-            pass
-        d.save()
-        d.delete()
-
-    return n, len(data['delete'])
+    return n

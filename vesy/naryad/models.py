@@ -25,7 +25,7 @@ class Task(models.Model):
     comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True)
     
     def __str__(self):
-        return 'контрагент: {}; груз: {}; отгружено {}; пункт разгрузки{}'.format(self.contractor, self.rubble, self.shipped, self.destination)
+        return 'контрагент: {}; груз: {}; отгружено {}; пункт разгрузки{}'.format(self.contractor, self.rubble, str(self.shipped), self.destination)
 
 
 class Record(models.Model):
@@ -65,17 +65,19 @@ class Car(models.Model):
     num = models.CharField(max_length=20, verbose_name='гос.номер', unique=True, null=True)
     carrier = models.ForeignKey('Carrier', on_delete=models.CASCADE, null=True)
 
+    def __str__(self):
+        return str(self.num)
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=100, verbose_name='название', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         abstract = True
-
     
 
 class Contractor(Organization):
@@ -107,9 +109,10 @@ class Rubble(models.Model):
     """PRODUCTS"""
     name = models.CharField(max_length=100, verbose_name='наименование груза', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
+    visible = models.CharField(max_length=1, verbose_name='наименование груза', default=1)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class RubbleRoot(models.Model):
@@ -130,13 +133,16 @@ class Destination(models.Model):
     wesy_id = models.SmallIntegerField()
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class Place(models.Model):
     """STORAGES"""
     name = models.CharField(max_length=20, verbose_name='название', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
+
+    def __str__(self):
+        return str(self.name)
 
 
 class AllocatedVolume(models.Model):
