@@ -1,0 +1,32 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{% if tasks %}
+    <form>
+        <table>
+            <tr>
+                <th>время составления заявки</th>
+                <th>контрагент</th>
+                <th>груз в ттн</th>
+                <th>объём всего</th>
+                <th>суточный объём</th>
+                <th>отгружено</th>
+                <th>машин на погрузке</th>
+                <th>пункт выгрузки</th>
+            </tr>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.date }}</td>
+                <td>{{ task.contractor }}</td>
+                <td>{{ task.rubble }}</td>
+                <td>{{ task.total_plan }}</td>
+                <td>{{ task.daily_plan }}</td>
+                <td>{{ task.shipped }}</td>
+                <td>{{ task. }}</td>
+                <td>{{ task.destination }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
+{% endif %}
+{% endblock %}

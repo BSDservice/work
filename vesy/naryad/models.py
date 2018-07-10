@@ -129,7 +129,7 @@ class RubbleQuality(models.Model):
 
 class Destination(models.Model):
     """UPLOADINGPOINTS"""
-    name = models.CharField(max_length=200, verbose_name='пункт разгрузки', null=True, blank=True)
+    name = models.CharField(max_length=200, verbose_name='пункт разгрузки', null=True, blank=True, unique=True)
     wesy_id = models.SmallIntegerField()
 
     def __str__(self):

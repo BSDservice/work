@@ -3,6 +3,7 @@ import datetime
 import requests
 import json
 import pickle
+import time
 
 
 class SyncDB:
@@ -29,17 +30,20 @@ class SyncDB:
                         'UPLOADINGPOINTS': 'Destination',
                         'TYPES_OF_PRODUCTS': 'RubbleRoot'}
         data_for_web = {}
-        wasdel = {}
         r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_data'})
         response = json.loads(r.text)  # список ID записей на WEB сервере
         for tab in table_for_sync.items():
             cursor.execute("SELECT ID, NAME FROM " + tab[0] + " WHERE DELETED = 'F'")
             tmp = cursor.fetchall()
+            tmp.append((0, 'неопределённый'))
             data_for_web[tab[1]] = [i for i in tmp if i[0] not in response[tab[1]]]
-            wasdel[tab[1]] = [i for i in response[tab[1]] if i not in [j[0] for j in tmp]]
+
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_data'}, data=json.dumps(
-            {'delete': wasdel, 'data': data_for_web}))
-        print(r.text, file=file)
+            {'data': data_for_web}))
+        if r.text == 'Синхронизация прошла успешно':
+            pass
+        else:
+            print(r.text, file=file)
 
     def sync_weights(self, cursor, file):
         cursor.execute("""SELECT TRANSPORT_NUMBER, VCPAYER, P_NAME, DOC_NETTO, K_NAME, ST_NAME, VCRECIVER, VCUPLOADINGPOINT, 
@@ -58,16 +62,16 @@ class SyncDB:
         response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
         records = dict()
         records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
-        #records['delete'] = [i for i in response['weights'].keys() if int(i) not in [j[15] for j in data]]
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                         data=json.dumps(records))
         for rec in data:
             if rec[18] == 1:
                 self.start_date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3], minute=rec[12][4]-1, second=rec[12][5], microsecond=rec[12][6])
                 break
-
-        print(r.text)
-        print(r.text, file=file)
+        if r.text == 'Синхронизация прошла успешно':
+            pass
+        else:
+            print(r.text, file=file)
 
     def cast_types_for_json(self, lst):
         """приведение списка из локальной базы к формату передачи JSON"""
@@ -96,7 +100,6 @@ if __name__ == '__main__':
         try:
             with open('syncdbfile', 'rb') as file:
                 data = pickle.load(file)
-                print(data.start_date)
         except FileNotFoundError:
             data = SyncDB()
 
@@ -105,15 +108,18 @@ if __name__ == '__main__':
 
         with open('syncdbfile', 'wb') as file:
             pickle.dump(data, file)
-
         
         while True:
-            events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
-            events.begin()
-            e = events.wait()
-            events.close()
-            print(e)
+            try:
+                events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
+                events.begin()
+                e = events.wait()
+            except Exception as err:
+                print('{} Ошибка: {}'.format(datetime.datetime.now(), err), file=log)
+                continue
+            finally:
+                events.close()
+            time.sleep(2)
             data.sync_weights(cur, log)
             with open('syncdbfile', 'wb') as file:
                 pickle.dump(data, file)
-                print(data.start_date)
