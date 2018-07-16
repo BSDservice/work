@@ -1,16 +1,23 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-{% if tasks %}
-    <form>
+{% if tasks %}    
         <table>
             <tr>
                 <th>время составления заявки</th>
                 <th>контрагент</th>
                 <th>груз в ттн</th>
-                <th>объём всего</th>
-                <th>суточный объём</th>
-                <th>отгружено</th>
+                <th class="weights">
+                    <table>
+                        <tr>
+                            <td>суточный</td>
+                            <td rowspan="2">отгружено</td>
+                        </tr>
+                        <tr>    
+                            <td>общий</td>                           
+                        </tr>
+                    </table>
+                </th>
                 <th>машин на погрузке</th>
                 <th>пункт выгрузки</th>
             </tr>
@@ -19,14 +26,24 @@
                 <td>{{ task.date }}</td>
                 <td>{{ task.contractor }}</td>
                 <td>{{ task.rubble }}</td>
-                <td>{{ task.total_plan }}</td>
-                <td>{{ task.daily_plan }}</td>
-                <td>{{ task.shipped }}</td>
-                <td>{{ task. }}</td>
+                <td class="weights">
+                    <table>
+                            <tr>
+                                <td>{{ task.daily_plan }}</td>
+                                <td rowspan="2">{{ task.shipped }}</td>
+                            </tr>
+                            <tr>    
+                                <td>{{ task.total_plan }}</td>                           
+                            </tr>
+                    </table>
+                </td>
+                <td>{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
+                <td><input type="submit"></td>
             </tr>
+        
             {% endfor %}
         </table>
-    </form>
+    
 {% endif %}
 {% endblock %}

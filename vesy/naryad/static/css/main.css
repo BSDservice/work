@@ -1,0 +1,14 @@
+
+th.weights table, th.weights tr, th.weights td {
+    border: none;
+    margin: none;
+    background-color: inherit;
+}
+
+td.weights table, td.weights tr, td.weights td {
+    border: none;
+    margin: none;
+    padding: 10px 20px;
+    background-color: inherit;
+    color: inherit;
+}

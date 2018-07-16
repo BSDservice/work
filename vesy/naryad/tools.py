@@ -2,6 +2,7 @@ from .models import Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuali
                           Employer, Consignor, Car, Task, AllocatedVolume
 from django.core.exceptions import ObjectDoesNotExist
 import datetime
+import decimal
 
 
 def save_data(data):
@@ -61,10 +62,8 @@ def records_sync(data):
                                       minute=rec[13][4], second=rec[13][5], microsecond=rec[13][6])
         else:
             date2 = rec[13]
-        if rec[3] is str:
-            weight = None
-        else:
-            weight = rec[3]
+        
+        weight = decimal.Decimal(rec[3])
 
         try:
             obj = Record.objects.get(wesy_id=rec[15])
@@ -74,7 +73,7 @@ def records_sync(data):
             obj.car = car
             obj.contractor = contractor
             obj.rubble = rubble
-            obj.weight = float(rec[3])
+            obj.weight = decimal.Decimal(rec[3])
             obj.consignee = consignee
             obj.destination = destination
             obj.employer = employer
@@ -91,15 +90,14 @@ def records_sync(data):
                          ttn=rec[11], car=car, contractor=contractor, rubble=rubble, weight=weight,
                          consignee=consignee, destination=destination, employer=employer, consignor=consignor,
                          carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
-
-        task.shipped += obj.weight
-        if task.total_plan is not None and task.shipped > task.total_plan:
-            task.status = 3
+        
+        task + obj
+        task.check_status()
         task.save()
         obj.save()
         try:
             a_vol = AllocatedVolume.objects.get(task=task, carrier=carrier)
-            a_vol.shipped += obj.weight
+            a_vol.shipped = a_vol.shipped + obj.weight
             a_vol.save()
         except ObjectDoesNotExist:
             pass

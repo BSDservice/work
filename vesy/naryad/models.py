@@ -12,18 +12,38 @@ class Task(models.Model):
     total_plan = models.SmallIntegerField(verbose_name='общий объем', null=True)
     daily_plan = models.SmallIntegerField(verbose_name='суточный объем', null=True)
     TASK_STATUS = (
-        (1, 'черновик'),
-        (2, 'к выполнению'),
-        (3, 'выполнено'),
+        ('1', 'черновик'),
+        ('2', 'к выполнению'),
+        ('3', 'выполнено'),
     )
-    shipped = models.FloatField(verbose_name='отгружено по заданию', default=0)
+    shipped = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='отгружено по заданию', default=0)
     price = models.SmallIntegerField(verbose_name='цена', null=True)
     status = models.CharField(max_length=1, choices=TASK_STATUS, default=1, help_text='статус задания')
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
     rubble = models.ForeignKey('Rubble', on_delete=models.CASCADE, verbose_name='выписываемый материал')
     hours = models.CharField(max_length=20, verbose_name='Часы приема', null=True)
     comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True)
+    cars_on_loading = models.SmallIntegerField(default=0, verbose_name='машины в заводе')
+    contact = models.CharField(max_length=200, verbose_name='Контакт', null=True, blank=True)
+
+    def change_date(self, new_date):
+        self.date = new_date
+
+    def check_status(self):
+        if self.total_plan is not None and self.total_plan < self.shipped:
+            self.status = 3
+
+    def __add__(self, Record):
+        if Record.weight == 0 and Record.status == 1: self.cars_on_loading += 1
+        elif Record.weight is None and Record.status == 2: pass
+        else: 
+            self.shipped = self.shipped + Record.weight
+            if self.cars_on_loading > 0: self.cars_on_loading -= 1
     
+    def __sub__(self, Record):
+        if Record.weight is None: pass
+        else: self.shipped = self.shipped - Record.weight
+
     def __str__(self):
         return 'контрагент: {}; груз: {}; отгружено {}; пункт разгрузки{}'.format(self.contractor, self.rubble, str(self.shipped), self.destination)
 
@@ -37,7 +57,7 @@ class Record(models.Model):
     contractor = models.ForeignKey('Contractor', on_delete=models.SET_NULL, null=True, blank=True,
                                    verbose_name='контрагент')
     rubble = models.ForeignKey('Rubble', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='фракция')
-    weight = models.FloatField(verbose_name='вес, тн.', null=True, blank=True)
+    weight = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='вес, тн.', null=True, blank=True)
     consignee = models.ForeignKey('Consignee', on_delete=models.SET_NULL, null=True, blank=True,
                                   verbose_name='грузополучатель')
     destination = models.ForeignKey('Destination', on_delete=models.SET_NULL, null=True, blank=True,
@@ -57,7 +77,7 @@ class Record(models.Model):
     status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     def __str__(self):
-        return 'контрагент: {}; груз: {}; пункт разгрузки{}'.format(self.contractor, self.rubble, self.destination)
+        return 'контрагент: {}; груз: {}; пункт разгрузки {}'.format(self.contractor, self.rubble, self.destination)
 
 
 class Car(models.Model):
@@ -149,7 +169,7 @@ class AllocatedVolume(models.Model):
     """Выделенный объём на перевозчика"""
     task = models.ForeignKey(Task, verbose_name='задание', on_delete=models.CASCADE)
     carrier = models.ForeignKey(Carrier, on_delete=models.CASCADE, verbose_name='перевозчик')
-    weight = models.SmallIntegerField(verbose_name='объем')
+    weight = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='объем')
     shipped = models.FloatField(verbose_name='отгружено', null=True)
 
 

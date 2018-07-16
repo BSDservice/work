@@ -10,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 import datetime
 from .tools import records_sync, save_data
 from django.contrib.auth.decorators import login_required
+#from .forms import TaskForm
+from django.db.models import Sum
 
 
 @csrf_exempt
@@ -56,4 +58,39 @@ def data_sync(request):
 @login_required
 def naryad(request):
     tasks = Task.objects.all()
+    for task in tasks:
+        if task.status == 2:
+            records = Record.objects.filter(task=task, date1__gt=task.date)
+            task.shipped = records.aggregate(Sum('weight'))['weight__sum']
+            task.save()
+    
     return render(request, 'naryad/index.html', {'tasks': tasks})
+
+
+@login_required
+def add_task(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = Task(request.cleaned_data)
+            task.save()
+            tasks = Task.objects.all()
+            return render(request, 'naryad/index.html', {'tasks': tasks})
+    else:
+        pass
+        #form = NameForm()
+    return render(request, 'naryd/add_task.html')
+
+
+@login_required
+def update_task(request, task_id):
+    print(request.POST.items)
+    task = Task.objects.get(id=task_id)
+    tasks = Task.objects.all()
+    for task in tasks:
+        if task.status == 2:
+            records = Record.objects.filter(task=task, date__gt=task.date)
+            task.shipped = records.aggregate(Sum('weight'))
+    
+    return render(request, 'naryad/index.html', {'tasks': tasks})
+    

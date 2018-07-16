@@ -8,4 +8,5 @@ urlpatterns = [
     path('data_sync/post', views.data_sync, name='data_sync'),
     path('', views.naryad, name='naryad'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('update_task/<int:task_id>', views.update_task, name='update_task'),
 ]
