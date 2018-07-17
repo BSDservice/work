@@ -38,7 +38,8 @@ class Task(models.Model):
         elif Record.weight is None and Record.status == 2: pass
         else: 
             self.shipped = self.shipped + Record.weight
-            if self.cars_on_loading > 0: self.cars_on_loading -= 1
+            if self.cars_on_loading > 0:
+                self.cars_on_loading -= 1
     
     def __sub__(self, Record):
         if Record.weight is None: pass
@@ -76,8 +77,9 @@ class Record(models.Model):
     )
     status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
+
     def __str__(self):
-        return 'контрагент: {}; груз: {}; пункт разгрузки {}'.format(self.contractor, self.rubble, self.destination)
+        return 'контрагент: {}; груз: {}; пункт разгрузки {};  {}'.format(self.contractor, self.rubble, self.destination, self.task)
 
 
 class Car(models.Model):

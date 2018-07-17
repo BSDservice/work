@@ -57,6 +57,7 @@ class SyncDB:
                        (self.start_date, self.end_date))
         data = cursor.fetchall()
         data = list(map(list, data))
+        print(data[0], self.start_date)
         SyncDB.cast_types_for_json(self, data)
         r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
         response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
@@ -66,7 +67,9 @@ class SyncDB:
                           data=json.dumps(records))
         for rec in data:
             if rec[18] == 1:
-                self.start_date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3], minute=rec[12][4]-1 if rec[12][4]>0 else rec[12][4], second=rec[12][5], microsecond=rec[12][6])
+                self.start_date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
+                                                    minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]) - \
+                                  datetime.timedelta(hours=1)
                 break
         """
         try:

@@ -21,7 +21,7 @@
                 <th>машин на погрузке</th>
                 <th>пункт выгрузки</th>
             </tr>
-            {% for task in tasks %}
+            {% for task in dostavka %}
             <tr>
                 <td>{{ task.date }}</td>
                 <td>{{ task.contractor }}</td>
@@ -34,6 +34,27 @@
                             </tr>
                             <tr>    
                                 <td>{{ task.total_plan }}</td>                           
+                            </tr>
+                    </table>
+                </td>
+                <td>{{ task.cars_on_loading }}</td>
+                <td>{{ task.destination }}</td>
+                <td><input type="submit"></td>
+            </tr>
+            {% endfor %}
+            {% for task in samovyvoz %}
+            <tr>
+                <td>{{ task.date }}</td>
+                <td>{{ task.contractor }}</td>
+                <td>{{ task.rubble }}</td>
+                <td class="weights">
+                    <table>
+                            <tr>
+                                <td>{{ task.daily_plan }}</td>
+                                <td rowspan="2">{{ task.shipped }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ task.total_plan }}</td>
                             </tr>
                     </table>
                 </td>

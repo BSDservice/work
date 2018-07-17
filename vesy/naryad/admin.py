@@ -2,7 +2,11 @@ from django.contrib import admin
 from .models import *
 
 
-admin.site.register(Record)
+class RecordAdmin(admin.ModelAdmin):
+    list_filter = ('task',)
+
+
+admin.site.register(Record, RecordAdmin)
 admin.site.register(Task)
 admin.site.register(Contractor)
 admin.site.register(Consignee)

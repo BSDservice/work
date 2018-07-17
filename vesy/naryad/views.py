@@ -3,8 +3,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from .models import Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place, Consignee,\
                           Employer, Consignor, Car, Task, AllocatedVolume
-from django.views.decorators.csrf import ensure_csrf_cookie
-import socket
 import json
 from django.views.decorators.csrf import csrf_exempt
 import datetime
@@ -59,12 +57,19 @@ def data_sync(request):
 def naryad(request):
     tasks = Task.objects.all()
     for task in tasks:
-        if task.status == 2:
-            records = Record.objects.filter(task=task, date1__gt=task.date)
-            task.shipped = records.aggregate(Sum('weight'))['weight__sum']
+        records = Record.objects.filter(task=task, date2__gt=task.date)
+        shipped = records.aggregate(Sum('weight'))['weight__sum']
+        if shipped is None:
+            task.shipped = 0
+        else:
+            task.shipped = shipped
+        try:
             task.save()
-    
-    return render(request, 'naryad/index.html', {'tasks': tasks})
+        except Exception:
+            print(task)
+    dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
+    samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
+    return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
 
 
 @login_required
