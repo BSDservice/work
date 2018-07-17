@@ -20,3 +20,9 @@ START : 2018-07-14 13:25:28.711963
 START : 2018-07-16 01:12:45.397090
 START : 2018-07-16 07:00:44.378563
 START : 2018-07-16 07:41:15.754508
+START : 2018-07-16 22:55:30.578125
+START : 2018-07-16 22:56:31
+START : 2018-07-17 03:24:22.531250
+2018-07-17 03:39:08.859375 Ошибка: ('Error while waiting for events:\n- SQLCODE: 0\n- unknown ISC error 0', 0, 0)
+2018-07-17 03:44:15.218750 Ошибка: ('Error while waiting for events:\n- SQLCODE: 0\n- unknown ISC error 0', 0, 0)
+2018-07-17 03:44:15.218750 Ошибка: ('Error while waiting for events:\n- SQLCODE: 0\n- unknown ISC error 0', 0, 0)

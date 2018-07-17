@@ -54,7 +54,7 @@ class SyncDB:
                         LEFT JOIN subcontractors s ON s.id = t.ireciverid
                         LEFT JOIN dictval dv2 ON dv2.idictid = t.iuploadingpointsid AND  dv2.istpdictvalid = 50 AND  dv2.istpdictid = 16
                         WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Машпром', 'Обуховский щебзавод')""",
-                    (self.start_date, self.end_date))
+                       (self.start_date, self.end_date))
         data = cursor.fetchall()
         data = list(map(list, data))
         SyncDB.cast_types_for_json(self, data)
@@ -63,12 +63,12 @@ class SyncDB:
         records = dict()
         records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
-                        data=json.dumps(records))
+                          data=json.dumps(records))
         for rec in data:
             if rec[18] == 1:
                 self.start_date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3], minute=rec[12][4]-1 if rec[12][4]>0 else rec[12][4], second=rec[12][5], microsecond=rec[12][6])
                 break
-        
+        """
         try:
             SyncDB.sync_weights_one(self, cursor, file, json.loads(r.text))
         except json.decoder.JSONDecodeError:
@@ -76,7 +76,7 @@ class SyncDB:
                 pass
             else:
                 print(r.text, file=file)        
-        
+        """
 
     def sync_weights_one(self, cursor, file, **kwargs):
         start_date = kwargs.pop('date')
@@ -129,24 +129,30 @@ if __name__ == '__main__':
                 data = pickle.load(file)
         except FileNotFoundError:
             data = SyncDB()
-
+        print('1')
         data.sync_data(cur, log)
+        print('2')
         data.sync_weights(cur, log)
-
+        print('3')
         with open('syncdbfile', 'wb') as file:
             pickle.dump(data, file)
-        
+        print('4')
         while True:
+            events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
+            print(events)
             try:
-                events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
                 events.begin()
                 e = events.wait()
+                print(e)
             except Exception as err:
                 print('{} Ошибка: {}'.format(datetime.datetime.now(), err), file=log)
                 continue
             finally:
                 events.close()
+            print('задержка 2 сек.')
             time.sleep(2)
+            print('продолжаю')
             data.sync_weights(cur, log)
+            print('выгрузка завершена')
             with open('syncdbfile', 'wb') as file:
                 pickle.dump(data, file)
