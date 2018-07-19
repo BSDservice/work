@@ -46,7 +46,7 @@ class Task(models.Model):
         else: self.shipped = self.shipped - Record.weight
 
     def __str__(self):
-        return 'контрагент: {}; груз: {}; отгружено {}; пункт разгрузки{}'.format(self.contractor, self.rubble, str(self.shipped), self.destination)
+        return 'контрагент: {}; \nгруз: {}; отгружено {}; \nпункт разгрузки{}'.format(self.contractor, self.rubble, str(self.shipped), self.destination)
 
 
 class Record(models.Model):
@@ -76,7 +76,7 @@ class Record(models.Model):
         ('2', 'убыл'),
     )
     status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
     def __str__(self):
         return 'контрагент: {}; груз: {}; пункт разгрузки {};  {}'.format(self.contractor, self.rubble, self.destination, self.task)

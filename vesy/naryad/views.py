@@ -68,6 +68,7 @@ def naryad(request):
         except Exception:
             print(task)
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
+    print(dostavka)
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
 
@@ -98,4 +99,4 @@ def update_task(request, task_id):
             task.shipped = records.aggregate(Sum('weight'))
     
     return render(request, 'naryad/index.html', {'tasks': tasks})
-    
+

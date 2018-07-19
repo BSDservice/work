@@ -38,7 +38,7 @@ def records_sync(data):
         n += 1
         try:
             car = Car.objects.get(num=rec[0])
-        except ObjectDoesNotExist:
+        except Car.DoesNotExist:
             car = Car(num=rec[0], brand=[14])
             car.save(rec)
         contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
@@ -53,9 +53,13 @@ def records_sync(data):
         try:
             task = Task.objects.get(contractor=contractor, consignee=consignee, destination=destination,
                                     employer=employer, consignor=consignor, rubble=rubble, status=2)
-        except ObjectDoesNotExist:
-            task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
-                        consignor=consignor, rubble=rubble, status=2, date=datetime.datetime.now())
+        except Task.DoesNotExist:
+            try:
+                task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
+                            consignor=consignor, rubble=rubble, status=2, date=datetime.datetime.now())
+                task.save()
+            except Exception as err:
+                print(err, rec)
 
         if rec[13] is not None:
             date2 = datetime.datetime(year=rec[13][0], month=rec[13][1], day=rec[13][2], hour=rec[13][3],
@@ -83,13 +87,15 @@ def records_sync(data):
             obj.wesy_id = rec[15]
             obj.status = rec[18]
             obj.task = task
-        except ObjectDoesNotExist:
-
-            obj = Record(date1=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
-                                                 minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
-                         ttn=rec[11], car=car, contractor=contractor, rubble=rubble, weight=weight,
-                         consignee=consignee, destination=destination, employer=employer, consignor=consignor,
-                         carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
+        except Record.DoesNotExist:
+            try:
+                obj = Record(date1=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
+                                                     minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
+                             ttn=rec[11], car=car, contractor=contractor, rubble=rubble, weight=weight,
+                             consignee=consignee, destination=destination, employer=employer, consignor=consignor,
+                             carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
+            except Exception as err:
+                print(err, rec)
         
         task + obj
         task.check_status()

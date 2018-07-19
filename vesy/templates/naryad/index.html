@@ -1,7 +1,6 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-{% if tasks %}    
         <table>
             <tr>
                 <th>время составления заявки</th>
@@ -39,9 +38,11 @@
                 </td>
                 <td>{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
-                <td><input type="submit"></td>
             </tr>
             {% endfor %}
+            <tr>
+                <td colspan="7" style="background-color: yellowgreen; text-align: center; font-size: large;">Самовывоз</td>
+            </tr>
             {% for task in samovyvoz %}
             <tr>
                 <td>{{ task.date }}</td>
@@ -60,11 +61,9 @@
                 </td>
                 <td>{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
-                <td><input type="submit"></td>
             </tr>
         
             {% endfor %}
         </table>
-    
-{% endif %}
+
 {% endblock %}

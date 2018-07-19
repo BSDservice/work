@@ -57,7 +57,6 @@ class SyncDB:
                        (self.start_date, self.end_date))
         data = cursor.fetchall()
         data = list(map(list, data))
-        print(data[0], self.start_date)
         SyncDB.cast_types_for_json(self, data)
         r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
         response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
@@ -121,8 +120,8 @@ class SyncDB:
 if __name__ == '__main__':
     with open('data.log', 'a') as log:
         print('START : {}'.format(str(datetime.datetime.now())), file=log)
-        con = fdb.connect(host='192.168.1.200',
-                          database='C:\\Documents and Settings\\All Users\\Application Data\\NAIS\\WeightRoom43s\\Database\\WEIGHTROOM_2018.FDB',
+        con = fdb.connect(host='192.168.1.111',
+                          database='C:\\ProgramData\\NAIS\\WeightRoom43s\\Database\\WEIGHTROOM_2018.FDB',
                           user='SYSDBA',
                           password='masterkey', sql_dialect=3, charset='WIN1251')
         cur = con.cursor()

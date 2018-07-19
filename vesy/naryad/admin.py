@@ -6,8 +6,12 @@ class RecordAdmin(admin.ModelAdmin):
     list_filter = ('task',)
 
 
+class TaskAdmin(admin.ModelAdmin):
+    list_filter = ('employer',)
+
+
 admin.site.register(Record, RecordAdmin)
-admin.site.register(Task)
+admin.site.register(Task, TaskAdmin)
 admin.site.register(Contractor)
 admin.site.register(Consignee)
 admin.site.register(Employer)
