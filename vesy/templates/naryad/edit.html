@@ -1,28 +1,5 @@
-<table>
-    <tr>
-        <th>время составления заявки</th>
-        <th>контрагент</th>
-        <th>груз в ттн</th>
-        <th>объём всего</th>
-        <th>суточный объём</th>
-        <th>отгружено</th>
-        <th>машин на погрузке</th>
-        <th>пункт выгрузки</th>
-    </tr>
-    {% for task in tasks %}
 <form action="{% url 'update_task' task_id=task.id %}" method="post">
-        {% csrf_token %}
-    <tr>
-        <td><input id='date' type="datetime-local" value='{{ task.date|date:"Y-m-d"}}T{{ task.date|time:"H:i"}}'></td>
-        <td>{{ task.contractor }}</td>
-        <td>{{ task.rubble }}</td>
-        <td><input type='number' min="1" max="999999" id="total_plan" value="{{ task.total_plan }}"</td>
-        <td><input type='number' min="1" max="9999" id="daily_plan" value="{{ task.daily_plan }}"</td>
-        <td>{{ task.shipped }}</td>
-        <td>{{ task.cars_on_loading }}</td>
-        <td>{{ task.destination }}</td>
-        <td><input type="submit"></td>
-    </tr>
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
 </form>
-    {% endfor %}
-</table>

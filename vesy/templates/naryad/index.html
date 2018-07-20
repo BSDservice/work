@@ -22,7 +22,7 @@
             </tr>
             {% for task in dostavka %}
             <tr>
-                <td>{{ task.date }}</td>
+                <td><a href="{% url 'update_task' task_id=task.id %}">{{ task.date }}</a></td>
                 <td>{{ task.contractor }}</td>
                 <td>{{ task.rubble }}</td>
                 <td class="weights">

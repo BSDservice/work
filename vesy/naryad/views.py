@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import datetime
 from .tools import records_sync, save_data
 from django.contrib.auth.decorators import login_required
-#from .forms import TaskForm
+from .forms import TaskForm
 from django.db.models import Sum
 
 
@@ -68,7 +68,6 @@ def naryad(request):
         except Exception:
             print(task)
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
-    print(dostavka)
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
 
@@ -90,13 +89,27 @@ def add_task(request):
 
 @login_required
 def update_task(request, task_id):
-    print(request.POST.items)
     task = Task.objects.get(id=task_id)
-    tasks = Task.objects.all()
-    for task in tasks:
-        if task.status == 2:
-            records = Record.objects.filter(task=task, date__gt=task.date)
-            task.shipped = records.aggregate(Sum('weight'))
-    
-    return render(request, 'naryad/index.html', {'tasks': tasks})
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task.date = form.cleaned_data['date']
+            task.comments = form.cleaned_data['comments']
+            task.daily_plan = form.cleaned_data['daily_plan']
+            task.total_plan = form.cleaned_data['total_plan']
+            task.status = form.cleaned_data['status']
+            task.hours = form.cleaned_data['hours']
+            task.save()
+        return naryad(request)
+    else:
+        form = TaskForm(initial={'date': task.date, 'contractor': task.contractor, 'comments': 'хуйня',
+                                 'consignee': task.consignee, 'employer': task.employer, 'consignor': task.consignor,
+                                 'destination': task.destination, 'place': task.place, 'total_plan': task.total_plan,
+                                 'daily_plan': task.daily_plan, 'status': task.status, 'rubble': task.rubble,
+                                 'hours': task.hours}).as_p()
+        return render(request, 'naryad/edit.html', {'form': form, 'task': task})
 
+
+"""
+consignee, employer, consignor, destination, place, total_plan, daily_plan, status, rubble, hours
+"""
