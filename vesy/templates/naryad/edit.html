@@ -1,4 +1,4 @@
-<form action="{% url 'update_task' task_id=task.id %}" method="post">
+<form action="{% url 'update_task' task_id=task.id %}" method="post" class="form-group">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Submit" />

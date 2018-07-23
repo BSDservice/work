@@ -9,7 +9,7 @@ import time
 class SyncDB:
     """"""
     def __init__(self):
-        self.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+        self.start_date = datetime.datetime.now() - datetime.timedelta(days=3)
         self.end_date = datetime.datetime.now().replace(year=2045)
         
     def sync_data(self, cursor, file):
@@ -131,6 +131,7 @@ if __name__ == '__main__':
                 data = pickle.load(file)
         except FileNotFoundError:
             data = SyncDB()
+        print('синхронизируемся с '+str(data.start_date))
         print('1')
         data.sync_data(cur, log)
         print('2')
@@ -151,8 +152,8 @@ if __name__ == '__main__':
                 continue
             finally:
                 events.close()
-            print('задержка 2 сек.')
-            time.sleep(2)
+            print('задержка 4 сек.')
+            time.sleep(4)
             print('продолжаю')
             data.sync_weights(cur, log)
             print('выгрузка завершена')

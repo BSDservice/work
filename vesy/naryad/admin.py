@@ -3,11 +3,13 @@ from .models import *
 
 
 class RecordAdmin(admin.ModelAdmin):
-    list_filter = ('task',)
+    list_filter = ('status',)
+    search_fields = ['contractor__name']
 
 
 class TaskAdmin(admin.ModelAdmin):
     list_filter = ('employer',)
+    search_fields = ['contractor__name']
 
 
 admin.site.register(Record, RecordAdmin)

@@ -1,4 +1,5 @@
 from django.db import models
+import decimal
 
 
 class Task(models.Model):
@@ -17,6 +18,7 @@ class Task(models.Model):
         ('3', 'выполнено'),
     )
     shipped = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='отгружено по заданию', default=0)
+    daily_shipped = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='отгружено по заданию за утки', default=0)
     price = models.SmallIntegerField(verbose_name='цена', null=True)
     status = models.CharField(max_length=1, choices=TASK_STATUS, default=1, help_text='статус задания')
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
@@ -25,6 +27,15 @@ class Task(models.Model):
     comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True)
     cars_on_loading = models.SmallIntegerField(default=0, verbose_name='машины в заводе')
     contact = models.CharField(max_length=200, verbose_name='Контакт', null=True, blank=True)
+    cargo_type = models.ForeignKey('RubbleRoot', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='фактический груз')
+    cargo_quality = models.ForeignKey('RubbleQuality', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="качество груза")
+    to_finish_total_plan = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='остаток до полного выполнения', default=0)
+    to_finish_daily_plan = models.DecimalField(max_digits=7, decimal_places=2,
+                                               verbose_name='остаток до суточного выполнения', default=0)
+
+    def finish(self):
+        self.to_finish_total_plan = decimal.Decimal(self.total_plan if self.total_plan else 0) - self.shipped
+        self.to_finish_daily_plan = decimal.Decimal(self.daily_plan if self.daily_plan else 0) - self.daily_shipped
 
     def change_date(self, new_date):
         self.date = new_date
@@ -142,11 +153,17 @@ class RubbleRoot(models.Model):
     name = models.CharField(max_length=100, verbose_name='род груза', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
 
+    def __str__(self):
+        return str(self.name)
+
 
 class RubbleQuality(models.Model):
     """CARGOMARK"""
     name = models.CharField(max_length=100, verbose_name='качество груза', null=True, blank=True)
     wesy_id = models.SmallIntegerField()
+
+    def __str__(self):
+        return str(self.name)
 
 
 class Destination(models.Model):

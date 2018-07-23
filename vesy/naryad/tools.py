@@ -27,6 +27,7 @@ def save_data(data):
             n += 1
     return n
 
+
 def records_sync(data):
     """
     Создает или обновляет записи о взвешивании, сопостовляя записи заданиям на отгрузку, если нет таковых создаёт их.
@@ -40,7 +41,7 @@ def records_sync(data):
             car = Car.objects.get(num=rec[0])
         except Car.DoesNotExist:
             car = Car(num=rec[0], brand=[14])
-            car.save(rec)
+            car.save()
         contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
         rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "неопределённый")
         consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "неопределённый")
@@ -60,6 +61,21 @@ def records_sync(data):
                 task.save()
             except Exception as err:
                 print(err, rec)
+        except Task.MultipleObjectsReturned as err:
+            tasks_list_duplicate = Task.objects.filter(contractor=contractor, consignee=consignee, destination=destination,
+                                                       employer=employer, consignor=consignor, rubble=rubble, status=2)
+            for task_dup in tasks_list_duplicate:
+                if task_dup is tasks_list_duplicate[0]:
+                    continue
+                else:
+                    try:
+                        records_to_detach = Record.objects.filter(task=task_dup)
+                        for record in records_to_detach:
+                            record.task = tasks_list_duplicate[0]
+                            record.save()
+                        print(task_dup.delete())
+                    except Exception as err:
+                        print(err)
 
         if rec[13] is not None:
             date2 = datetime.datetime(year=rec[13][0], month=rec[13][1], day=rec[13][2], hour=rec[13][3],

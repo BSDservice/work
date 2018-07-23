@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import datetime
 from .tools import records_sync, save_data
 from django.contrib.auth.decorators import login_required
-from .forms import TaskForm
+from .forms import TaskFormUpdate
 from django.db.models import Sum
 
 
@@ -55,18 +55,32 @@ def data_sync(request):
 
 @login_required
 def naryad(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.all().order_by('status', 'contractor')
     for task in tasks:
-        records = Record.objects.filter(task=task, date2__gt=task.date)
-        shipped = records.aggregate(Sum('weight'))['weight__sum']
-        if shipped is None:
-            task.shipped = 0
-        else:
-            task.shipped = shipped
-        try:
-            task.save()
-        except Exception:
-            print(task)
+        if task.status == '2':
+            records = Record.objects.filter(task=task, date2__gt=task.date)
+            shipped = records.aggregate(Sum('weight'))['weight__sum']
+            daily = 0
+            x = datetime.datetime.now().time() < task.date.time()
+            for rec in records:
+                if x:
+                    if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
+                                                                   minute=task.date.time().minute,
+                                                                   second=task.date.time().second)+datetime.timedelta(days=-1):
+                        daily += rec.weight
+                else:
+                    if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
+                                                                   minute=task.date.time().minute,
+                                                                   second=task.date.time().second):
+                        daily += rec.weight
+
+            task.shipped = shipped if shipped else 0
+            task.daily_shipped = daily if daily else 0
+            task.finish()
+            try:
+                task.save()
+            except Exception:
+                print(task)
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
@@ -89,9 +103,11 @@ def add_task(request):
 
 @login_required
 def update_task(request, task_id):
+    if request.method == 'GET' and task_id == 0:
+        task_id = request.GET.get('task_id')
     task = Task.objects.get(id=task_id)
     if request.method == 'POST':
-        form = TaskForm(request.POST)
+        form = TaskFormUpdate(request.POST)
         if form.is_valid():
             task.date = form.cleaned_data['date']
             task.comments = form.cleaned_data['comments']
@@ -99,14 +115,22 @@ def update_task(request, task_id):
             task.total_plan = form.cleaned_data['total_plan']
             task.status = form.cleaned_data['status']
             task.hours = form.cleaned_data['hours']
+            task.cargo_type = form.cleaned_data['cargo_type']
+            task.cargo_quality = form.cleaned_data['cargo_quality']
+            task.place = form.cleaned_data['place']
+            task.check_status()
             task.save()
-        return naryad(request)
+            return naryad(request)
+        else:
+            print(form.errors)
+            return naryad(request)
     else:
-        form = TaskForm(initial={'date': task.date, 'contractor': task.contractor, 'comments': 'хуйня',
-                                 'consignee': task.consignee, 'employer': task.employer, 'consignor': task.consignor,
-                                 'destination': task.destination, 'place': task.place, 'total_plan': task.total_plan,
-                                 'daily_plan': task.daily_plan, 'status': task.status, 'rubble': task.rubble,
-                                 'hours': task.hours}).as_p()
+        form = TaskFormUpdate(initial={'date': task.date, 'contractor': task.contractor, 'comments': task.comments,
+                                       'consignee': task.consignee, 'employer': task.employer, 'consignor': task.consignor,
+                                       'destination': task.destination, 'place': task.place, 'total_plan': task.total_plan,
+                                       'daily_plan': task.daily_plan, 'status': task.status, 'rubble': task.rubble,
+                                       'hours': task.hours, 'cargo_type': task.cargo_type,
+                                       'cargo_quality': task.cargo_quality}).as_p()
         return render(request, 'naryad/edit.html', {'form': form, 'task': task})
 
 
