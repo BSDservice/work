@@ -7,7 +7,9 @@ import time
 
 
 class SyncDB:
-    """"""
+    """
+    Хранит дату последней синхронизации
+    """
     def __init__(self):
         self.start_date = datetime.datetime.now() - datetime.timedelta(days=3)
         self.end_date = datetime.datetime.now().replace(year=2045)
@@ -46,6 +48,9 @@ class SyncDB:
             print(r.text, file=file)
 
     def sync_weights(self, cursor, file):
+        """
+        Синхронизирует записи взвешиваний
+        """
         cursor.execute("""SELECT TRANSPORT_NUMBER, VCPAYER, P_NAME, DOC_NETTO, K_NAME, ST_NAME, VCRECIVER, VCUPLOADINGPOINT, 
                                 TO_NAME, VCTRANSPPAYER, VCSENDER, INVOICE, FIRST_WEIGHT_DATE, FIRST_WEIGHT_TIME, SECOND_WEIGHT_DATE, SECOND_WEIGHT_TIME,
                                 TR_TYPE, W.ID, VCCARGOMARK, TP_NAME, W.STATUS, S_NAME
@@ -57,7 +62,7 @@ class SyncDB:
                        (self.start_date, self.end_date))
         data = cursor.fetchall()
         data = list(map(list, data))
-        SyncDB.cast_types_for_json(self, data)
+        SyncDB.cast_types_for_json(data)
         r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
         response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
         records = dict()
@@ -70,39 +75,9 @@ class SyncDB:
                                                     minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]) - \
                                   datetime.timedelta(hours=1)
                 break
-        """
-        try:
-            SyncDB.sync_weights_one(self, cursor, file, json.loads(r.text))
-        except json.decoder.JSONDecodeError:
-            if r.text == 'Синхронизация прошла успешно':
-                pass
-            else:
-                print(r.text, file=file)        
-        """
 
-    def sync_weights_one(self, cursor, file, **kwargs):
-        start_date = kwargs.pop('date')
-        params = ' AND '.join([str(key + ' = ' + value) for key, value in kwargs.items()]) + ' AND '
-        cursor.execute("""SELECT TRANSPORT_NUMBER, VCPAYER, P_NAME, DOC_NETTO, K_NAME, ST_NAME, VCRECIVER, VCUPLOADINGPOINT, 
-                                TO_NAME, VCTRANSPPAYER, VCSENDER, INVOICE, FIRST_WEIGHT_DATE, FIRST_WEIGHT_TIME, SECOND_WEIGHT_DATE, SECOND_WEIGHT_TIME,
-                                TR_TYPE, W.ID, VCCARGOMARK, TP_NAME, W.STATUS, S_NAME
-                        FROM weights_sel (0, ?, ?) w             
-                        LEFT JOIN ttndata t ON t.idweights = w.id 
-                        LEFT JOIN subcontractors s ON s.id = t.ireciverid
-                        LEFT JOIN dictval dv2 ON dv2.idictid = t.iuploadingpointsid AND  dv2.istpdictvalid = 50 AND  dv2.istpdictid = 16
-                        WHERE """ + params + " w.deleted = 'F' AND to_name IN ('Донской камень', 'Машпром', 'Обуховский щебзавод')",
-                    (start_date, self.end_date))
-        data = cursor.fetchall()
-        data = list(map(list, data))
-        SyncDB.cast_types_for_json(self, data)
-        r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
-        response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
-        records = dict()
-        records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
-        r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
-                        data=json.dumps(records))
-
-    def cast_types_for_json(self, lst):
+    @staticmethod
+    def cast_types_for_json(lst):
         """приведение списка из локальной базы к формату передачи JSON"""
         for rec in lst:
             if rec[3] is not None:
@@ -132,30 +107,26 @@ if __name__ == '__main__':
         except FileNotFoundError:
             data = SyncDB()
         print('синхронизируемся с '+str(data.start_date))
-        print('1')
+        print(data.sync_data.__doc__)
         data.sync_data(cur, log)
-        print('2')
+        print('ОПЕРАЦИЯ ЗАВЕРШЕНА\n')
+        print(data.sync_weights.__doc__)
         data.sync_weights(cur, log)
-        print('3')
+        print('ОПЕРАЦИЯ ЗАВЕРШЕНА')
         with open('syncdbfile', 'wb') as file:
             pickle.dump(data, file)
-        print('4')
+        print('Синхронизация работает в реальном времени...')
         while True:
             events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
-            print(events)
             try:
                 events.begin()
                 e = events.wait()
-                print(e)
             except Exception as err:
                 print('{} Ошибка: {}'.format(datetime.datetime.now(), err), file=log)
                 continue
             finally:
                 events.close()
-            print('задержка 4 сек.')
             time.sleep(4)
-            print('продолжаю')
             data.sync_weights(cur, log)
-            print('выгрузка завершена')
             with open('syncdbfile', 'wb') as file:
                 pickle.dump(data, file)

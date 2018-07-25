@@ -44,7 +44,6 @@ def data_sync(request):
         elif request.META['HTTP_USER_AGENT'] == 'my-app/0.0.1' and request.META['HTTP_TYPE'] == 'post_records':
             records = json.loads(request.body.decode('utf-8'))
             n = records_sync(records)
-            print(Record.objects.filter(status=1).count())
             return HttpResponse(
                 'Синхронизация прошла успешно')
         else:
@@ -55,32 +54,34 @@ def data_sync(request):
 
 @login_required
 def naryad(request):
+    """
+    Отображает задания
+    """
     tasks = Task.objects.all().order_by('status', 'contractor')
     for task in tasks:
-        if task.status == '2':
-            records = Record.objects.filter(task=task, date2__gt=task.date)
-            shipped = records.aggregate(Sum('weight'))['weight__sum']
-            daily = 0
-            x = datetime.datetime.now().time() < task.date.time()
-            for rec in records:
-                if x:
-                    if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
-                                                                   minute=task.date.time().minute,
-                                                                   second=task.date.time().second)+datetime.timedelta(days=-1):
-                        daily += rec.weight
-                else:
-                    if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
-                                                                   minute=task.date.time().minute,
-                                                                   second=task.date.time().second):
-                        daily += rec.weight
+        records = Record.objects.filter(task=task, date2__gt=task.date)
+        shipped = records.aggregate(Sum('weight'))['weight__sum']
+        daily = 0
+        x = datetime.datetime.now().time() < task.date.time()
+        for rec in records:
+            if x:
+                if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
+                                                               minute=task.date.time().minute,
+                                                               second=task.date.time().second)+datetime.timedelta(days=-1):
+                    daily += rec.weight
+            else:
+                if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
+                                                               minute=task.date.time().minute,
+                                                               second=task.date.time().second):
+                    daily += rec.weight
 
-            task.shipped = shipped if shipped else 0
-            task.daily_shipped = daily if daily else 0
-            task.finish()
-            try:
-                task.save()
-            except Exception:
-                print(task)
+        task.shipped = shipped if shipped else 0
+        task.daily_shipped = daily if daily else 0
+        task.finish()
+        try:
+            task.save()
+        except Exception:
+            print(task)
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
