@@ -4,6 +4,31 @@ import requests
 import json
 import pickle
 import time
+from sys import exit
+
+
+def except_error_connection(func):
+        def decor(self, cur, log):
+            try:
+                func(self, cur, log)
+            except requests.exceptions.ConnectionError as err:
+                print('Ошибка соединения с web-сервером: {}'.format(err))
+                delay = [1, 2, 3]
+                for i in delay:
+                    print('повторная попытка соединения через {} секунд...'.format(i * 60))
+                    time.sleep(i * 60)
+                    try:
+                        func(self, cur, log)
+                        return decor
+                    except requests.exceptions.ConnectionError:
+                        continue
+                print('web-сервер не отвечает, проверьте соединение с Интернет '
+                      'и работоспособность web-сервера, перезапустите драйвер.')
+                print('программа будет закрыта через 30 сек...')
+                print(err, file=log)
+                time.sleep(30)
+                exit(1)
+        return decor
 
 
 class SyncDB:
@@ -11,9 +36,10 @@ class SyncDB:
     Хранит дату последней синхронизации
     """
     def __init__(self):
-        self.start_date = datetime.datetime.now() - datetime.timedelta(days=3)
+        self.start_date = datetime.datetime.now() - datetime.timedelta(days=1, hours=5, minutes=20)
         self.end_date = datetime.datetime.now().replace(year=2045)
-        
+
+    @except_error_connection
     def sync_data(self, cursor, file):
         """
         Синхронизирует таблицы: 'CARGOMARK'          :  'RubbleQuality',
@@ -47,6 +73,7 @@ class SyncDB:
         else:
             print(r.text, file=file)
 
+    @except_error_connection
     def sync_weights(self, cursor, file):
         """
         Синхронизирует записи взвешиваний
@@ -62,13 +89,21 @@ class SyncDB:
                        (self.start_date, self.end_date))
         data = cursor.fetchall()
         data = list(map(list, data))
+
         SyncDB.cast_types_for_json(data)
         r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
         response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
         records = dict()
         records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
+
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                           data=json.dumps(records))
+        if r.text == 'update_data':
+            r = requests.post('http://127.0.0.1:8000/data_sync/post',
+                              headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
+                              data=json.dumps(records))
+            if r.text == 'update_data':
+                print('Ошибка синхронизации при записи в удаленную базу', file=file)
         for rec in data:
             if rec[18] == 1:
                 self.start_date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
@@ -106,19 +141,19 @@ if __name__ == '__main__':
                 data = pickle.load(file)
         except FileNotFoundError:
             data = SyncDB()
-        print('синхронизируемся с '+str(data.start_date))
+        print(8*' '+'синхронизируемся с '+str(data.start_date))
         print(data.sync_data.__doc__)
         data.sync_data(cur, log)
-        print('ОПЕРАЦИЯ ЗАВЕРШЕНА\n')
+        print(8*' '+'ОПЕРАЦИЯ ЗАВЕРШЕНА',  end=' ')
         print(data.sync_weights.__doc__)
         data.sync_weights(cur, log)
-        print('ОПЕРАЦИЯ ЗАВЕРШЕНА')
+        print(8*' '+'ОПЕРАЦИЯ ЗАВЕРШЕНА')
         with open('syncdbfile', 'wb') as file:
             pickle.dump(data, file)
-        print('Синхронизация работает в реальном времени...')
+        print(8*' '+'Синхронизация работает в реальном времени...')
         while True:
-            events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
             try:
+                events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
                 events.begin()
                 e = events.wait()
             except Exception as err:

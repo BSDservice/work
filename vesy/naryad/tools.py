@@ -42,18 +42,22 @@ def records_sync(data):
         except Car.DoesNotExist:
             car = Car(num=rec[0], brand=[14])
             car.save()
-        contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
-        rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "неопределённый")
-        consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "неопределённый")
-        destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "неопределённый")
-        employer = Employer.objects.get(name=rec[9] if rec[9] is not None else "неопределённый")
-        consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "неопределённый")
-        carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "неопределённый")
-        place = Place.objects.get(name=rec[5] if rec[5] is not None else "неопределённый")
+        try:
+            contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
+            rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "неопределённый")
+            consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "неопределённый")
+            destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "неопределённый")
+            employer = Employer.objects.get(name=rec[9] if rec[9] is not None else "неопределённый")
+            consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "неопределённый")
+            carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "неопределённый")
+            place = Place.objects.get(name=rec[5] if rec[5] is not None else "неопределённый")
+        except ObjectDoesNotExist:
+            return 'update_data'
 
         try:
             task = Task.objects.get(contractor=contractor, consignee=consignee, destination=destination,
-                                    employer=employer, consignor=consignor, rubble=rubble, status=2)
+                                    employer=employer, consignor=consignor, rubble=rubble)
+            task.status = '2'
         except Task.DoesNotExist:
             try:
                 task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
@@ -63,7 +67,7 @@ def records_sync(data):
                 print(err, rec)
         except Task.MultipleObjectsReturned as err:
             tasks_list_duplicate = Task.objects.filter(contractor=contractor, consignee=consignee, destination=destination,
-                                                       employer=employer, consignor=consignor, rubble=rubble, status=2)
+                                                       employer=employer, consignor=consignor, rubble=rubble)
             for task_dup in tasks_list_duplicate:
                 if task_dup is tasks_list_duplicate[0]:
                     continue

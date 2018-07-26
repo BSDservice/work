@@ -90,6 +90,126 @@ td.weights table, td.weights tr, td.weights td {
     background-color: #2154E2;
 }
 
+#button-add {
+    display: block;
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    bottom: 50px;
+    right: 50px;
+    border-radius: 50px;
+    background-color: orange;
+    padding: 0;
+    margin: 0;
+    -webkit-transition-property: box-shadow;
+    -moz-transition-property: box-shadow;
+    transition-property: box-shadow;
+    -webkit-transition-duration: .5s;
+    -moz-transition-duration: .5s;
+    transition-duration: .5s;
+    cursor: pointer;
+}
+
+#button-add:after {
+    display: block;
+    position: absolute;
+    content: "";
+    right: 7px;
+    top:17px;
+    width: 20px;
+    border: solid white 3px;
+    padding: 0;
+    margin: 0;
+
+}
+
+#button-add:before {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 7px;
+    right:17px;
+    height: 20px;
+    border: solid white 3px;
+    padding: 0;
+    margin: 0;
+
+}
+
+#button-add:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+#button-add:hover #button-add:after {
+    right: 17px;
+    top: 7px;
+    width: 0;
+    height: 20px;
+}
+
+#button-add:hover :before {
+    top: 17px;
+    right: 7px;
+    height: 0;
+    width: 20px;
+}
+/*    ---------
+.btn {
+    display: block;
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    height: 20px;
+    width: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+  background-color: transparent;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding-left: 14px;
+  padding-right: 14px;
+  font-size: 13px;
+  font-size: 0.8125rem;
+  line-height: 36px;
+  -webkit-transition-property: box-shadow;
+  -moz-transition-property: box-shadow;
+  transition-property: box-shadow;
+  -webkit-transition-duration: .5s;
+  -moz-transition-duration: .5s;
+  transition-duration: .5s;
+}
+
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
+}
+
+.btn, .btn:hover, .btn:active, .btn:focus {
+  text-decoration: none;
+  outline: none;
+}
+.btn::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+.btn-icon.btn-orange {
+  color: #ff9800;
+}
+
+.btn-icon:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+*/
 * {
     box-sizing: border-box;
 }

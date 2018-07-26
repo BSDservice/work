@@ -30,7 +30,7 @@ def data_sync(request):
                 ans[cls.__name__] = [i.wesy_id for i in tmp]
             return JsonResponse(ans)
         elif request.GET.get('type') == 'get_weights':
-            records = Record.objects.all()
+            records = Record.objects.filter(date1__gt=datetime.datetime.now()-datetime.timedelta(hours=12))
             ans = {'weights': {i.wesy_id: int(i.status) for i in records}}
             return JsonResponse(ans)
         else:
@@ -44,8 +44,10 @@ def data_sync(request):
         elif request.META['HTTP_USER_AGENT'] == 'my-app/0.0.1' and request.META['HTTP_TYPE'] == 'post_records':
             records = json.loads(request.body.decode('utf-8'))
             n = records_sync(records)
-            return HttpResponse(
-                'Синхронизация прошла успешно')
+            if n == 'update_data':
+                return HttpResponse('update_data')
+            else:
+                return HttpResponse('Синхронизация прошла успешно')
         else:
             return HttpResponse('Синхронизация прервана(2)')
     else:
@@ -57,7 +59,7 @@ def naryad(request):
     """
     Отображает задания
     """
-    tasks = Task.objects.all().order_by('status', 'contractor')
+    tasks = Task.objects.filter(status='2').order_by('status', 'contractor')
     for task in tasks:
         records = Record.objects.filter(task=task, date2__gt=task.date)
         shipped = records.aggregate(Sum('weight'))['weight__sum']
@@ -78,6 +80,7 @@ def naryad(request):
         task.shipped = shipped if shipped else 0
         task.daily_shipped = daily if daily else 0
         task.finish()
+        task.check_status()
         try:
             task.save()
         except Exception:
@@ -85,6 +88,15 @@ def naryad(request):
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
+
+
+@login_required
+def show_hide_tasks(request):
+    if request.method == 'GET':
+        tasks = Task.objects.filter(status__in=['1', '3']).order_by('status', 'contractor')
+        dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
+        samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
+        return render(request, 'naryad/list_hide_tasks.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
 
 
 @login_required
