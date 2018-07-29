@@ -1,5 +1,4 @@
-from django.shortcuts import render
-from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place, Consignee,\
                           Employer, Consignor, Car, Task, AllocatedVolume
@@ -8,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 import datetime
 from .tools import records_sync, save_data
 from django.contrib.auth.decorators import login_required
-from .forms import TaskFormUpdate
+from .forms import TaskFormUpdate, TaskForm
 from django.db.models import Sum
 
 
@@ -104,14 +103,42 @@ def add_task(request):
     if request.method == 'POST':
         form = TaskForm(request.POST)
         if form.is_valid():
-            task = Task(request.cleaned_data)
-            task.save()
-            tasks = Task.objects.all()
-            return render(request, 'naryad/index.html', {'tasks': tasks})
+            try:
+                task = Task.objects.get(contractor=form.cleaned_data['contractor'], consignee=form.cleaned_data['consignee'],
+                                        employer=form.cleaned_data['employer'], consignor=form.cleaned_data['consignor'],
+                                        destination=form.cleaned_data['destination'], rubble=form.cleaned_data['rubble'])
+                task.date = form.cleaned_data['date']
+                task.comments = form.cleaned_data['comments']
+                task.daily_plan = form.cleaned_data['daily_plan']
+                task.total_plan = form.cleaned_data['total_plan']
+                task.status = form.cleaned_data['status']
+                task.hours = form.cleaned_data['hours']
+                task.cargo_type = form.cleaned_data['cargo_type']
+                task.cargo_quality = form.cleaned_data['cargo_quality']
+                task.place = form.cleaned_data['place']
+                task.save()
+            except Task.DoesNotExist:
+                task = Task()
+                task.contractor = form.cleaned_data['contractor']
+                task.consignee = form.cleaned_data['consignee']
+                task.employer = form.cleaned_data['employer']
+                task.consignor = form.cleaned_data['consignor']
+                task.destination = form.cleaned_data['destination']
+                task.rubble = form.cleaned_data['rubble']
+                task.date = form.cleaned_data['date']
+                task.comments = form.cleaned_data['comments']
+                task.daily_plan = form.cleaned_data['daily_plan']
+                task.total_plan = form.cleaned_data['total_plan']
+                task.status = form.cleaned_data['status']
+                task.hours = form.cleaned_data['hours']
+                task.cargo_type = form.cleaned_data['cargo_type']
+                task.cargo_quality = form.cleaned_data['cargo_quality']
+                task.place = form.cleaned_data['place']
+                task.save()
+            return redirect('naryad')
     else:
-        pass
-        #form = NameForm()
-    return render(request, 'naryd/add_task.html')
+        form = TaskForm(initial={'date': datetime.datetime.now()}).as_p()
+        return render(request, 'naryad/add_task.html', {'form': form})
 
 
 @login_required
@@ -131,12 +158,11 @@ def update_task(request, task_id):
             task.cargo_type = form.cleaned_data['cargo_type']
             task.cargo_quality = form.cleaned_data['cargo_quality']
             task.place = form.cleaned_data['place']
-            task.check_status()
             task.save()
-            return naryad(request)
+            return redirect('naryad')
         else:
             print(form.errors)
-            return naryad(request)
+            return redirect('naryad')
     else:
         form = TaskFormUpdate(initial={'date': task.date, 'contractor': task.contractor, 'comments': task.comments,
                                        'consignee': task.consignee, 'employer': task.employer, 'consignor': task.consignor,

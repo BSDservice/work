@@ -1,51 +1,29 @@
 from django import forms
-from .models import Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place, Consignee,\
-                    Employer, Consignor, Task
-import datetime
-
-"""
-class TaskForm(forms.ModelForm):
-    class Meta:
-        model = Task
-        fields = ['date', 'contractor']
-
+from .models import Contractor, Rubble, RubbleRoot, RubbleQuality, Destination, Place, Consignee, Employer, Consignor
 
 
 class TaskForm(forms.Form):
-    date = forms.DateTimeField(widget=forms.DateTimeInput)
-
-    CONTRACTOR_SELECT = Contractor.objects.all()
-    contractor = forms.Select(choices=CONTRACTOR_SELECT)
-
-    CONSIGNEE_SELECT = Consignee.objects.all()
-    consignee = forms.Select(choices=CONSIGNEE_SELECT)
-
-    EMPLOYER_SELECT = Employer.objects.all()
-    employer = forms.Select(choices=EMPLOYER_SELECT)
-
-    CONSIGNOR_SELECT = Consignor.objects.all()
-    consignor = forms.Select(choices=CONSIGNOR_SELECT)
-
-    DESTINATION_SELECT = Destination.objects.all()
-    destination = forms.Select(choices=DESTINATION_SELECT)
-
-    PLACE_SELECT = Place.objects.all()
-    place = forms.CharField(label='место погрузки')
-
-    total_plan = forms.IntegerField(label='общий объем')
-    daily_plan = forms.IntegerField(label='суточный объем')
-    price = forms.IntegerField(label='цена')
+    date = forms.DateTimeField(widget=forms.DateTimeInput, label="Дата формирования")
+    contractor = forms.ModelChoiceField(widget=forms.Select, queryset=Contractor.objects.all(), label="Контрагент")
+    consignee = forms.ModelChoiceField(widget=forms.Select, queryset=Consignee.objects.all(), label="Грузополучатель")
+    employer = forms.ModelChoiceField(widget=forms.Select, queryset=Employer.objects.all(), label="Заказчик-плательщик")
+    consignor = forms.ModelChoiceField(widget=forms.Select, queryset=Consignor.objects.all(), label="Грузоотправитель")
+    destination = forms.ModelChoiceField(widget=forms.Select, queryset=Destination.objects.all(), label="Пункт разгрузки")
+    rubble = forms.ModelChoiceField(widget=forms.Select, queryset=Rubble.objects.all(), label="Груз в документах")
+    cargo_type = forms.ModelChoiceField(widget=forms.Select, queryset=RubbleRoot.objects.all(), label='Фактический груз')
+    cargo_quality = forms.ModelChoiceField(widget=forms.Select, queryset=RubbleQuality.objects.all(), label='Качество груза', required=False)
+    place = forms.ModelChoiceField(widget=forms.Select, queryset=Place.objects.all(), label='Место погрузки', required=False)
+    total_plan = forms.IntegerField(label='Общий объем')
+    daily_plan = forms.IntegerField(label='Суточный объем')
     TASK_STATUS = (
-        (1, 'черновик'),
-        (2, 'к выполнению'),
-        (3, 'выполнено'),
+        (1, 'ЧЕРНОВИК'),
+        (2, 'К ВЫПОЛНЕНИЮ'),
+        (3, 'ВЫПОЛНЕНО'),
     )
-    status = forms.Select(choices=TASK_STATUS)   
-    RUBBLE_SELECT = Rubble.objects.all()
-    rubble = forms.Select(choices=RUBBLE_SELECT)
+    status = forms.ChoiceField(widget=forms.Select, choices=TASK_STATUS, label="Статус заявки")
+
     hours = forms.CharField(label='Часы приема')
-    comments = forms.CharField(label='Комментарий')
-"""
+    comments = forms.CharField(label='Комментарий', required=False)
 
 
 class TaskFormUpdate(forms.Form):

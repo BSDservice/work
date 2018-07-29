@@ -34,6 +34,8 @@ def records_sync(data):
     Сверяет отгруженный объем по заданию и меняет статус задания если объём вывезен.
     Вносит изменения в выделенный объём перевозчику.
     """
+    if 'delete' in data.keys():
+        print(Record.objects.filter(id__in=data['delete']).delete())
     n = 0
     for wesy_id, rec in data['weights'].items():
         n += 1

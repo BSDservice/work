@@ -86,3 +86,10 @@ START : 2018-07-26 14:14:53.363819
 START : 2018-07-26 15:03:29.516472
 START : 2018-07-26 16:49:25.405932
 HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /data_sync/get?type=get_weights (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x01C31750>: Failed to establish a new connection: [WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение',))
+START : 2018-07-29 02:14:12.884794
+START : 2018-07-29 02:27:20.549377
+START : 2018-07-29 02:32:57.003627
+START : 2018-07-29 02:34:21.652000
+START : 2018-07-29 02:41:11.558740
+START : 2018-07-29 02:52:55.494047
+START : 2018-07-29 02:54:15.567254

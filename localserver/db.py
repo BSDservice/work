@@ -38,6 +38,7 @@ class SyncDB:
     def __init__(self):
         self.start_date = datetime.datetime.now() - datetime.timedelta(days=1, hours=5, minutes=20)
         self.end_date = datetime.datetime.now().replace(year=2045)
+        self.last_delete_sync_id = 0
 
     @except_error_connection
     def sync_data(self, cursor, file):
@@ -96,6 +97,22 @@ class SyncDB:
         records = dict()
         records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
 
+        # проверка наличие информации об удалённых записях
+        if self.last_delete_sync_id == 0:
+            cursor.execute("""SELECT * FROM EVENT_LAST_IDS WHERE ID > 107718""")
+            self.last_delete_sync_id = cursor.fetchall()[-1][0]
+            print(self.last_delete_sync_id)
+        else:
+            cursor.execute(
+                """SELECT * FROM EVENT_LAST_IDS eli WHERE eli.ID > ? AND eli.EVENT_NAME = 'WR_DELETE_WEIGHT'""",
+                (self.last_delete_sync_id,))
+            tmp = cursor.fetchall()
+            if tmp:
+                self.last_delete_sync_id = tmp[-1][0]
+                id_for_del_list = [i[2] for i in tmp]
+                print('были удалены:' + str(id_for_del_list))
+                records['delete'] = id_for_del_list
+
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                           data=json.dumps(records))
         if r.text == 'update_data':
@@ -110,6 +127,7 @@ class SyncDB:
                                                     minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]) - \
                                   datetime.timedelta(hours=1)
                 break
+
 
     @staticmethod
     def cast_types_for_json(lst):

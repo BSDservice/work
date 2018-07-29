@@ -10,4 +10,5 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('update_task/<int:task_id>', views.update_task, name='update_task'),
     path('list_hide_tasks', views.show_hide_tasks, name='show_hide_tasks'),
+    path('add_task', views.add_task, name='add_task'),
 ]

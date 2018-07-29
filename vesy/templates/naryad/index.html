@@ -6,6 +6,11 @@
                 <div>время составления заявки</div>
                 <div>контрагент</div>
                 <div>груз в ттн</div>
+                <div class="about_rubble">
+                    <div>грузим</br>фактически</div>
+                    <hr>
+                    <div>качество</div>
+                </div>
                 <div class="weights">
                     <div>
                             <div class="plan">
@@ -24,6 +29,10 @@
                 <div>{{ task.date }}</div>
                 <div>{{ task.contractor }}</div>
                 <div>{{ task.rubble }}</div>
+                <div class="about_rubble">
+                    <div>{{ task.cargo_type }}</div>
+                    <div>{{ task.cargo_quality }}</div>
+                </div>
                 <div {% if task.status == '2' %}
                           {% if task.to_finish_total_plan < 10 %}
                                 class="weights alert_5"
@@ -74,6 +83,10 @@
                 <div>{{ task.date }}</div>
                 <div>{{ task.contractor }}</div>
                 <div>{{ task.rubble }}</div>
+                <div class="about_rubble">
+                    <div>{{ task.cargo_type }}</div>
+                    <div>{{ task.cargo_quality }}</div>
+                </div>
                 <div {% if task.status == '2' %}
                           {% if task.to_finish_total_plan < 10 %}
                                 class="weights alert_5"
@@ -114,7 +127,7 @@
             </a>
         
             {% endfor %}
-
+        </div>
         <div class="edit_row" id="modal">
             <div id="edit_row_content">
                 <span class="close">&times;</span>

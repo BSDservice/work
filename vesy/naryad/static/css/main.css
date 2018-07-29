@@ -89,7 +89,7 @@ td.weights table, td.weights tr, td.weights td {
 .form-group > input[type=submit]:hover {
     background-color: #2154E2;
 }
-
+/* кнопка добавить */
 #button-add {
     display: block;
     position: fixed;
