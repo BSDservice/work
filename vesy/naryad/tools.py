@@ -67,7 +67,11 @@ def records_sync(data):
         try:
             task = Task.objects.get(contractor=contractor, consignee=consignee, destination=destination,
                                     employer=employer, consignor=consignor, rubble=rubble)
-            task.status = '2'
+            if task.status == '3':
+                task.date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
+                                              minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6])
+                task.status = '2'
+
         except Task.DoesNotExist:
             try:
                 task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,

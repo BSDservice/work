@@ -43,21 +43,6 @@ class Task(models.Model):
         """Ставит заданию статус 'Выполнено', если общий объём перевезён"""
         if self.total_plan is not None and self.total_plan < self.shipped:
             self.status = 3
-
-    def __add__(self, Record):
-        """
-        при первом взвешивании прибавляет машину в очередь,
-        при втором снимает с очереди и прибавляет вес,
-        если на втором взвешивании вес не определён игнорирует операцыю.
-        """
-        if Record.weight == 0 and Record.status == 1:
-            self.cars_on_loading += 1
-        elif Record.weight is None and Record.status == 2:
-            pass
-        else: 
-            self.shipped = self.shipped + Record.weight
-            if self.cars_on_loading > 0:
-                self.cars_on_loading -= 1
     
     def __sub__(self, Record):
         """

@@ -60,6 +60,7 @@ def naryad(request):
     """
     tasks = Task.objects.filter(status='2').order_by('status', 'contractor')
     for task in tasks:
+        task.cars_on_loading = 0
         records = Record.objects.filter(task=task, date2__gt=task.date, status__in=['1', '2'])
         shipped = records.aggregate(Sum('weight'))['weight__sum']
         daily = 0
@@ -75,6 +76,8 @@ def naryad(request):
                                                                minute=task.date.time().minute,
                                                                second=task.date.time().second):
                     daily += rec.weight
+            if rec.status == '1':
+                task.cars_on_loading += 1
 
         task.shipped = shipped if shipped else 0
         task.daily_shipped = daily if daily else 0
