@@ -3,3 +3,4 @@
 /.idea
 vesy/naryad/migrations/*
 /venv
+vesy/vesy/settings.py
