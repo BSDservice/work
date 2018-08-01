@@ -110,7 +110,6 @@ class SyncDB:
             if tmp:
                 self.last_delete_sync_id = tmp[-1][0]
                 id_for_del_list = [i[2] for i in tmp]
-                print('были удалены:' + str(id_for_del_list))
                 records['delete'] = id_for_del_list
 
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
@@ -171,7 +170,7 @@ if __name__ == '__main__':
         print(8*' '+'Синхронизация работает в реальном времени...')
         while True:
             try:
-                events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT'])
+                events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT', 'WR_DELETE_WEIGHT'])
                 events.begin()
                 e = events.wait()
             except Exception as err:

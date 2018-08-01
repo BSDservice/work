@@ -3,6 +3,7 @@ import decimal
 
 
 class Task(models.Model):
+    """Задание на вывоз, формируется автоматом при появлениии уникальной Record"""
     date = models.DateTimeField(verbose_name='дата формирования задания')
     contractor = models.ForeignKey('Contractor', on_delete=models.CASCADE, verbose_name='контрагент')
     consignee = models.ForeignKey('Consignee', on_delete=models.CASCADE, verbose_name='грузополучатель')
@@ -34,27 +35,38 @@ class Task(models.Model):
                                                verbose_name='остаток до суточного выполнения', default=0)
 
     def finish(self):
+        """Обновляет остатки по заданию"""
         self.to_finish_total_plan = decimal.Decimal(self.total_plan if self.total_plan else 0) - self.shipped
         self.to_finish_daily_plan = decimal.Decimal(self.daily_plan if self.daily_plan else 0) - self.daily_shipped
 
-    def change_date(self, new_date):
-        self.date = new_date
-
     def check_status(self):
+        """Ставит заданию статус 'Выполнено', если общий объём перевезён"""
         if self.total_plan is not None and self.total_plan < self.shipped:
             self.status = 3
 
     def __add__(self, Record):
-        if Record.weight == 0 and Record.status == 1: self.cars_on_loading += 1
-        elif Record.weight is None and Record.status == 2: pass
+        """
+        при первом взвешивании прибавляет машину в очередь,
+        при втором снимает с очереди и прибавляет вес,
+        если на втором взвешивании вес не определён игнорирует операцыю.
+        """
+        if Record.weight == 0 and Record.status == 1:
+            self.cars_on_loading += 1
+        elif Record.weight is None and Record.status == 2:
+            pass
         else: 
             self.shipped = self.shipped + Record.weight
             if self.cars_on_loading > 0:
                 self.cars_on_loading -= 1
     
     def __sub__(self, Record):
-        if Record.weight is None: pass
-        else: self.shipped = self.shipped - Record.weight
+        """
+        вычесть вес или убрать из очереди при удалении записи
+        """
+        if Record.weight is None and Record.status == '1':
+            self.cars_on_loading -= 1
+        else:
+            self.shipped = self.shipped - Record.weight
 
     def __str__(self):
         return 'контрагент: {}; \nгруз: {}; отгружено {}; \nпункт разгрузки{}'.format(self.contractor, self.rubble, str(self.shipped), self.destination)
@@ -85,6 +97,7 @@ class Record(models.Model):
     CAR_STATUS = (
         ('1', 'в заводе'),
         ('2', 'убыл'),
+        ('DEL', 'удалена')
     )
     status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE)

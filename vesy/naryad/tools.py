@@ -35,7 +35,15 @@ def records_sync(data):
     Вносит изменения в выделенный объём перевозчику.
     """
     if 'delete' in data.keys():
-        print(Record.objects.filter(id__in=data['delete']).delete())
+        for rec in Record.objects.filter(id__in=data['delete']):
+            rec.status = 'DEL'
+            task = rec.task
+            task - rec
+            task.save()
+            rec.save()
+
+
+
     n = 0
     for wesy_id, rec in data['weights'].items():
         n += 1
