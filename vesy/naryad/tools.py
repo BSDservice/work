@@ -130,8 +130,7 @@ def records_sync(data):
                              carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
             except Exception as err:
                 print(err, rec)
-        
-        task + obj
+
         task.check_status()
         task.save()
         obj.save()
