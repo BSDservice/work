@@ -23,10 +23,10 @@ def data_sync(request):
     if request.method == 'GET':
         if request.GET.get('type') == 'get_data':
             ans = {}
-            lst = [Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place]
+            lst = [Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place]
             for cls in lst:
                 tmp = cls.objects.all()
-                ans[cls.__name__] = [i.wesy_id for i in tmp]
+                ans[cls.__name__] = [i.name for i in tmp]
             return JsonResponse(ans)
         elif request.GET.get('type') == 'get_weights':
             records = Record.objects.filter(date1__gt=datetime.datetime.now()-datetime.timedelta(hours=12))
@@ -89,7 +89,9 @@ def naryad(request):
             print(task)
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
-    return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz})
+    cargo_type = {i['id']: i['name'] for i in RubbleRoot.objects.values() if i['name'] is not None}
+    cargo_quality = {i['id']: i['name'] for i in RubbleQuality.objects.values() if i['name'] is not None}
+    return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz, 'cargo_type': cargo_type, 'cargo_quality': cargo_quality})
 
 
 @login_required
@@ -146,10 +148,14 @@ def add_task(request):
 
 @login_required
 def update_task(request, task_id):
+    """
     if request.method == 'GET' and task_id == 0:
         task_id = request.GET.get('task_id')
     task = Task.objects.get(id=task_id)
+    """
     if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        task = Task.objects.get(id=task_id)
         form = TaskFormUpdate(request.POST)
         if form.is_valid():
             task.date = form.cleaned_data['date']

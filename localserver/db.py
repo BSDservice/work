@@ -5,30 +5,32 @@ import json
 import pickle
 import time
 from sys import exit
+import functools
 
 
 def except_error_connection(func):
-        def decor(self, cur, log):
-            try:
-                func(self, cur, log)
-            except requests.exceptions.ConnectionError as err:
-                print('Ошибка соединения с web-сервером: {}'.format(err))
-                delay = [1, 2, 3]
-                for i in delay:
-                    print('повторная попытка соединения через {} секунд...'.format(i * 60))
-                    time.sleep(i * 60)
-                    try:
-                        func(self, cur, log)
-                        return decor
-                    except requests.exceptions.ConnectionError:
-                        continue
-                print('web-сервер не отвечает, проверьте соединение с Интернет '
-                      'и работоспособность web-сервера, перезапустите драйвер.')
-                print('программа будет закрыта через 30 сек...')
-                print(err, file=log)
-                time.sleep(30)
-                exit(1)
-        return decor
+    @functools.wraps(func)
+    def decor(self, cur, log):
+        try:
+            func(self, cur, log)
+        except requests.exceptions.ConnectionError as err:
+            print('Ошибка соединения с web-сервером: {}'.format(err))
+            delay = [1, 2, 3]
+            for i in delay:
+                print('повторная попытка соединения через {} секунд...'.format(i * 60))
+                time.sleep(i * 60)
+                try:
+                    func(self, cur, log)
+                    return decor
+                except requests.exceptions.ConnectionError:
+                    continue
+            print('web-сервер не отвечает, проверьте соединение с Интернет '
+                  'и работоспособность web-сервера, перезапустите драйвер.')
+            print('программа будет закрыта через 30 сек...')
+            print(err, file=log)
+            time.sleep(30)
+            exit(1)
+    return decor
 
 
 class SyncDB:
@@ -52,20 +54,20 @@ class SyncDB:
                                 'TYPES_OF_PRODUCTS'  :  'RubbleRoot'
         """
         table_for_sync = {'CARGOMARK': 'RubbleQuality',
-                        'SUBCONTRACTORS': 'Contractor',
-                        'DRIVERS': 'Carrier',
-                        'PRODUCTS': 'Rubble',
-                        'STORAGES': 'Place',
-                        'UPLOADINGPOINTS': 'Destination',
-                        'TYPES_OF_PRODUCTS': 'RubbleRoot'}
+                          'SUBCONTRACTORS': 'Contractor',
+                          'DRIVERS': 'Carrier',
+                          'PRODUCTS': 'Rubble',
+                          'STORAGES': 'Place',
+                          'UPLOADINGPOINTS': 'Destination',
+                          'TYPES_OF_PRODUCTS': 'RubbleRoot'}
         data_for_web = {}
         r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_data'})
         response = json.loads(r.text)  # список ID записей на WEB сервере
         for tab in table_for_sync.items():
-            cursor.execute("SELECT ID, NAME FROM " + tab[0] + " WHERE DELETED = 'F'")
+            cursor.execute("SELECT DISTINCT NAME FROM " + tab[0] + " WHERE DELETED = 'F'")
             tmp = cursor.fetchall()
-            tmp.append((0, 'неопределённый'))
-            data_for_web[tab[1]] = [i for i in tmp if i[0] not in response[tab[1]]]
+            tmp.append('неопределённый')
+            data_for_web[tab[1]] = [i[0] for i in tmp if i[0] not in response[tab[1]]]
 
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_data'}, data=json.dumps(
             {'data': data_for_web}))

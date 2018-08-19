@@ -78,7 +78,7 @@ class Record(models.Model):
     carrier = models.ForeignKey('Carrier', on_delete=models.SET_NULL, null=True, blank=True,
                                 verbose_name='перевозчик')
     place = models.ForeignKey('Place', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='место погрузки')
-    wesy_id = models.CharField(max_length=20, unique=True)
+    wesy_id = models.IntegerField(unique=True)
     CAR_STATUS = (
         ('1', 'в заводе'),
         ('2', 'убыл'),
@@ -101,8 +101,7 @@ class Car(models.Model):
 
 
 class Organization(models.Model):
-    name = models.CharField(max_length=100, verbose_name='название', null=True, blank=True)
-    wesy_id = models.CharField(max_length=20)
+    name = models.CharField(unique=True, max_length=100, verbose_name='название', null=True, blank=True)
 
     def __str__(self):
         return str(self.name)
@@ -139,7 +138,6 @@ class Carrier(Organization):
 class Rubble(models.Model):
     """PRODUCTS"""
     name = models.CharField(max_length=100, verbose_name='наименование груза', null=True, blank=True)
-    wesy_id = models.CharField(max_length=20)
     visible = models.CharField(max_length=1, verbose_name='наименование груза', default=1)
 
     def __str__(self):
@@ -149,7 +147,6 @@ class Rubble(models.Model):
 class RubbleRoot(models.Model):
     """TYPES_OF_PRODUCTS"""
     name = models.CharField(max_length=100, verbose_name='род груза', null=True, blank=True)
-    wesy_id = models.CharField(max_length=20)
 
     def __str__(self):
         return str(self.name)
@@ -158,7 +155,6 @@ class RubbleRoot(models.Model):
 class RubbleQuality(models.Model):
     """CARGOMARK"""
     name = models.CharField(max_length=100, verbose_name='качество груза', null=True, blank=True)
-    wesy_id = models.CharField(max_length=20)
 
     def __str__(self):
         return str(self.name)
@@ -167,7 +163,6 @@ class RubbleQuality(models.Model):
 class Destination(models.Model):
     """UPLOADINGPOINTS"""
     name = models.CharField(max_length=200, verbose_name='пункт разгрузки', null=True, blank=True, unique=True)
-    wesy_id = models.CharField(max_length=20)
 
     def __str__(self):
         return str(self.name)
@@ -175,8 +170,7 @@ class Destination(models.Model):
 
 class Place(models.Model):
     """STORAGES"""
-    name = models.CharField(max_length=20, verbose_name='название', null=True, blank=True)
-    wesy_id = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, verbose_name='название', null=True, blank=True, unique=True)
 
     def __str__(self):
         return str(self.name)

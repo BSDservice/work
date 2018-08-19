@@ -6,8 +6,7 @@ import decimal
 
 
 def save_data(data):
-    obj_dict = {'Record': Record,
-                'Contractor': Contractor,
+    obj_dict = {'Contractor': Contractor,
                 'Carrier': Carrier,
                 'Rubble': Rubble,
                 'RubbleRoot': RubbleRoot,
@@ -19,10 +18,10 @@ def save_data(data):
         for item in recs:
             if tab == 'Contractor':
                 for tab_split in [Consignee, Employer, Consignor, Contractor]:
-                    entry = tab_split(wesy_id=item[0], name=item[1])
+                    entry = tab_split(name=item)
                     entry.save()
             else:
-                entry = obj_dict[tab](wesy_id=item[0], name=item[1])
+                entry = obj_dict[tab](name=item)
                 entry.save()
             n += 1
     return n

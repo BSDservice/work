@@ -1,163 +1,64 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-        <div class="table">
-            <a class="h_table" href="#">
-                <div>время составления заявки</div>
-                <div>контрагент</div>
-                <div>груз в ттн</div>
-                <div class="about_rubble">
-                    <div>грузим</br>фактически</div>
-                    <hr>
-                    <div>качество</div>
-                </div>
-                <div class="weights">
-                    <div>
-                            <div class="plan">
-                                <div>суточный</div>
-                                <div>общий</div>
-                            </div>
-                            <div class="otgruz">
-                                <div>вывезено</div>
-                            </div>
-                    </div>
-                </div>
-                <div>пункт выгрузки</div>
-            </a>
+<div>{% csrf_token %}</div>
+<div>
+    <div class="table-responsive">
+        <table id="editable_table" class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>id</th>
+                <th>время составления заявки</th>
+                <th>контрагент</th>
+                <th>Комментарий</th>
+                <th>груз в ттн</th>
+                <th>грузим<br>фактически</th>
+                <th>качество</th>
+                <th>суточный</th>
+                <th>вывезено</th>
+                <th>пункт выгрузки</th>
+                <th>время приёмки</th>
+            </tr>
+            </thead>
+            <tbody>
             {% for task in dostavka %}
-            <a href="#" {% if task.status == '3' %} class="done" {% elif task.status == '3' %} class="not_redy" {% endif %} onclick=showModal("{{ task.id }}")> <!--{% url 'update_task' task_id=task.id %}-->
-                <div>{{ task.date }}</div>
-                <div>{{ task.contractor }}</div>
-                <div>{{ task.rubble }}</div>
-                <div class="about_rubble">
-                    <div>{{ task.cargo_type }}</div>
-                    <div>{{ task.cargo_quality }}</div>
-                </div>
-                <div {% if task.status == '2' %}
-                          {% if task.to_finish_total_plan < 10 %}
-                                class="weights alert_5"
-                          {% elif task.to_finish_total_plan < 20 %}
-                                class="weights alert_4"
-                          {% elif task.to_finish_total_plan < 30 %}
-                                class="weights alert_3"
-                          {% elif task.to_finish_total_plan < 40 %}
-                                class="weights alert_2"
-                          {% elif task.to_finish_total_plan < 50 %}
-                                class="weights alert_1"
-                          {% else %} class="weights" {% endif %}
-                      {% else %} class="weights" {% endif %}>
-                    <div>
-                            <div class="plan">
-                                <div {% if task.status == '2' %}
-                          {% if task.to_finish_daily_plan < 10 %}
-                                class="alert_5"
-                          {% elif task.to_finish_daily_plan < 20 %}
-                                class="alert_4"
-                          {% elif task.to_finish_daily_plan < 30 %}
-                                class="alert_3"
-                          {% elif task.to_finish_daily_plan < 40 %}
-                                class="alert_2"
-                          {% elif task.to_finish_daily_plan < 50 %}
-                                class="alert_1"
-                          {% endif %}{% endif %}>
-                                     {{ task.daily_plan }}</div>
-                                <div>{{ task.total_plan }}</div>
-                            </div>
-                            <div class="otgruz">
-                                <div>{{ task.daily_shipped}}</div>
-                                <div>{{ task.shipped }}{% if task.cars_on_loading %}({{ task.cars_on_loading }}){% endif %}</div>
-                            </div>
-                    </div>
-                </div>
-                <div>{{ task.destination }}</div>
-            </a>
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.date }}</td>
+                <td>{{ task.contractor }}</td>
+                <td>{{ task.comments }}</td>
+                <td>{{ task.rubble }}</td>
+                <td>{{ task.cargo_type }}</td>
+                <td>{{ task.cargo_quality }}</td>
+                <td>{{ task.daily_plan }}</td>
+                <td>{{ task.daily_shipped }}</td>
+                <td>{{ task.destination }}</td>
+                <td>{{ task.hours }}</td>
+            </tr>
 
             {% endfor %}
-            <a>
-                {% for _ in '123456' %}
-             <div id="hr" style="border: none; height: 25px; background-color: yellowgreen; text-align: center; font-size: large;"></div>
-                {% endfor %}
-            </a>
+            <tr style="background-color: yellowgreen;">
+                <td colspan="6">САМОВЫВОЗ</td>
+            </tr>
             {% for task in samovyvoz %}
-            <a href="#" {% if task.status == '3' %} class="done" {% elif task.status == '3' %} class="not_redy" {% endif %} onclick=showModal("{{ task.id }}")>
-                <div>{{ task.date }}</div>
-                <div>{{ task.contractor }}</div>
-                <div>{{ task.rubble }}</div>
-                <div class="about_rubble">
-                    <div>{{ task.cargo_type }}</div>
-                    <div>{{ task.cargo_quality }}</div>
-                </div>
-                <div {% if task.status == '2' %}
-                          {% if task.to_finish_total_plan < 10 %}
-                                class="weights alert_5"
-                          {% elif task.to_finish_total_plan < 20 %}
-                                class="weights alert_4"
-                          {% elif task.to_finish_total_plan < 30 %}
-                                class="weights alert_3"
-                          {% elif task.to_finish_total_plan < 40 %}
-                                class="weights alert_2"
-                          {% elif task.to_finish_total_plan < 50 %}
-                                class="weights alert_1"
-                          {% else %} class="weights" {% endif %}
-                      {% else %} class="weights" {% endif %}>
-                    <div>
-                            <div class="plan">
-                                <div {% if task.status == '2' %}
-                          {% if task.to_finish_daily_plan < 10 %}
-                                class="alert_5"
-                          {% elif task.to_finish_daily_plan < 20 %}
-                                class="alert_4"
-                          {% elif task.to_finish_daily_plan < 30 %}
-                                class="alert_3"
-                          {% elif task.to_finish_daily_plan < 40 %}
-                                class="alert_2"
-                          {% elif task.to_finish_daily_plan < 50 %}
-                                class="alert_1"
-                          {% endif %}{% endif %}>
-                                     {{ task.daily_plan }}</div>
-                                <div>{{ task.total_plan }}</div>
-                            </div>
-                            <div class="otgruz">
-                                <div>{{ task.daily_shipped}}</div>
-                                <div>{{ task.shipped }}{% if task.cars_on_loading %}({{ task.cars_on_loading }}){% endif %}</div>
-                            </div>
-                    </div>
-                </div>
-                <div>{{ task.destination }}</div>
-            </a>
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.date }}</td>
+                <td>{{ task.contractor }}</td>
+                <td>{{ task.comments }}</td>
+                <td>{{ task.rubble }}</td>
+                <td>{{ task.cargo_type }}</td>
+                <td>{{ task.cargo_quality }}</td>
+                <td>{{ task.daily_plan }}</td>
+                <td>{{ task.daily_shipped }}</td>
+                <td>{{ task.destination }}</td>
+                <td>{{ task.hours }}</td>
+            </tr>
         
             {% endfor %}
-        </div>
-        <div class="edit_row" id="modal">
-            <div id="edit_row_content">
-                <span class="close">&times;</span>
-            </div>
-        </div>
-        <a href="{% url 'show_hide_tasks' %}" id="button-add" ></a>
-<script>
-function loadForm(idTask) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("edit_row_content").innerHTML = this.responseText;
-        }
-    };
-    xhttp.open("GET", "{% url 'update_task' task_id=0 %}?task_id=" + idTask, true);
-    xhttp.send();
-}
-function showModal(idTask) {
-    var modal = document.getElementById("modal");
-    var span = document.getElementsByClassName("close")[0];
-    modal.style.display = "block";
-    loadForm(idTask);
-    span.onclick = function () {
-        modal.style.display = "none";
-    }
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-}
-</script>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% endblock %}
