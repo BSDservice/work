@@ -89,8 +89,8 @@ def naryad(request):
             print(task)
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
-    cargo_type = {i['id']: i['name'] for i in RubbleRoot.objects.values() if i['name'] is not None}
-    cargo_quality = {i['id']: i['name'] for i in RubbleQuality.objects.values() if i['name'] is not None}
+    cargo_type = {str(i["id"]): i["name"] for i in RubbleRoot.objects.values() if i["name"] is not None}
+    cargo_quality = {str(i["id"]): i["name"] for i in RubbleQuality.objects.values() if i["name"] is not None}
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz, 'cargo_type': cargo_type, 'cargo_quality': cargo_quality})
 
 
@@ -171,6 +171,7 @@ def update_task(request, task_id):
             return redirect('naryad')
         else:
             print(form.errors)
+            print(request.POST)
             return redirect('naryad')
     else:
         form = TaskFormUpdate(initial={'date': task.date, 'contractor': task.contractor, 'comments': task.comments,

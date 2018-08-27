@@ -171,6 +171,7 @@ if __name__ == '__main__':
             pickle.dump(data, file)
         print(8*' '+'Синхронизация работает в реальном времени...')
         while True:
+            """
             try:
                 events = con.event_conduit(['WR_SECOND_WEIGHT', 'WR_FIRST_WEIGHT', 'WR_DELETE_WEIGHT'])
                 events.begin()
@@ -180,7 +181,8 @@ if __name__ == '__main__':
                 continue
             finally:
                 events.close()
-            time.sleep(4)
+            """
+            time.sleep(60)
             data.sync_weights(cur, log)
             with open('syncdbfile', 'wb') as file:
                 pickle.dump(data, file)

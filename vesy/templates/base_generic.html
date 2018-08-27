@@ -38,19 +38,19 @@
                 }
                 return "";
              }
-        var list_cargo_type = {{ cargo_type|safe }}
-        var list_cargo_quality = {{ cargo_quality|safe }}
+        var list_cargo_type = '{{ cargo_type }}'.replace(/&#39;/g, '"');
+        var list_cargo_quality = '{{ cargo_quality }}'.replace(/&#39;/g, '"');
         $.ajaxSetup({
         headers: { "X-CSRFToken": getCookie("csrftoken") }
         });
         $('#editable_table').Tabledit({
             url:"{% url 'update_task' task_id=0 %}",
             hideIdentifier: true,
-            editButton: false,
+
             buttons: {
                 edit: {
                     class: 'btn btn-sm btn-default',
-                    html: '<span class="fas fa-check-circle"></span>',
+                    html: '<span class="fa fa-pencil"></span>',
                     action: 'edit'
                 },
                 delete: {
@@ -60,21 +60,21 @@
                 },
                 save: {
                     class: 'btn btn-sm btn-success',
-                    html: 'Save'
+                    html: 'Сохранить'
                 },
                 restore: {
                     class: 'btn btn-sm btn-warning',
-                    html: 'Restore',
+                    html: 'Восстановить',
                     action: 'restore'
                 },
                 confirm: {
                     class: 'btn btn-sm btn-danger',
-                    html: 'Confirm'
+                    html: 'Подтвердить'
                 }
             },
             columns:{
                 identifier:[0, "task_id"],
-                editable:[[1, 'start_datetime'], [3, 'comments'], [5, list_cargo_type], [6, list_cargo_quality], [7, 'daily_plan'], [10, 'hours']],
+                editable:[[1, 'date'], [3, 'comments'], [5, 'cargo_type', list_cargo_type], [6, 'cargo_quality', list_cargo_quality], [7, 'daily_plan'], [10, 'hours']],
             },
 
             onSuccess:function (data, textStatus, jqXHR) {
@@ -84,7 +84,13 @@
             },
 
         });
+        var x = document.getElementsByName("date");
+        for (i = 0; i < x.length; i++) {
+            x[i].setAttribute("type", "datetime-local");
+        }
     });
+
+
     </script>
 
 </body>
