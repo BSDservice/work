@@ -34,7 +34,8 @@ def records_sync(data):
     Вносит изменения в выделенный объём перевозчику.
     """
     if 'delete' in data.keys():
-        for rec in Record.objects.filter(id__in=data['delete']):
+        fetch_del = Record.objects.filter(id__in=data['delete'])
+        for rec in fetch_del:
             rec.status = 'DEL'
             task = rec.task
             task - rec
@@ -60,7 +61,8 @@ def records_sync(data):
             consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "неопределённый")
             carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "неопределённый")
             place = Place.objects.get(name=rec[5] if rec[5] is not None else "неопределённый")
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as err:
+            print(rec[7], err)
             return 'update_data'
 
         try:

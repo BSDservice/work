@@ -66,7 +66,7 @@ class SyncDB:
         for tab in table_for_sync.items():
             cursor.execute("SELECT DISTINCT NAME FROM " + tab[0] + " WHERE DELETED = 'F'")
             tmp = cursor.fetchall()
-            tmp.append('неопределённый')
+            tmp.append(('неопределённый',))
             data_for_web[tab[1]] = [i[0] for i in tmp if i[0] not in response[tab[1]]]
 
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_data'}, data=json.dumps(
@@ -117,6 +117,7 @@ class SyncDB:
         r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                           data=json.dumps(records))
         if r.text == 'update_data':
+            self.sync_data(cursor, file)
             r = requests.post('http://127.0.0.1:8000/data_sync/post',
                               headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                               data=json.dumps(records))
