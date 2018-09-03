@@ -82,7 +82,7 @@ class Record(models.Model):
     CAR_STATUS = (
         ('1', 'в заводе'),
         ('2', 'убыл'),
-        ('DEL', 'удалена')
+        ('D', 'удалена')
     )
     status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE)

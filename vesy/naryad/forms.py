@@ -27,7 +27,7 @@ class TaskForm(forms.Form):
 
 
 class TaskFormUpdate(forms.Form):
-    date = forms.DateTimeField(widget=forms.DateTimeInput, label="Дата формирования")
+    date = forms.DateTimeField(widget=forms.DateTimeInput, label="Дата формирования", input_formats=['%Y-%m-%dT%H:%M', ])
     # contractor = forms.CharField(disabled=True, label="Контрагент", required=False)
     # consignee = forms.CharField(disabled=True, label="Грузополучатель", required=False)
     # employer = forms.CharField(disabled=True, label="Заказчик", required=False)

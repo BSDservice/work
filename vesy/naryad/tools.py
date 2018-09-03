@@ -36,13 +36,11 @@ def records_sync(data):
     if 'delete' in data.keys():
         fetch_del = Record.objects.filter(id__in=data['delete'])
         for rec in fetch_del:
-            rec.status = 'DEL'
+            rec.status = 'D'
             task = rec.task
             task - rec
             task.save()
             rec.save()
-
-
 
     n = 0
     for wesy_id, rec in data['weights'].items():
@@ -53,14 +51,14 @@ def records_sync(data):
             car = Car(num=rec[0], brand=[14])
             car.save()
         try:
-            contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "неопределённый")
-            rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "неопределённый")
-            consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "неопределённый")
-            destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "неопределённый")
-            employer = Employer.objects.get(name=rec[9] if rec[9] is not None else "неопределённый")
-            consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "неопределённый")
-            carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "неопределённый")
-            place = Place.objects.get(name=rec[5] if rec[5] is not None else "неопределённый")
+            contractor = Contractor.objects.get(name=rec[19] if rec[19] is not None else "не определён")
+            rubble = Rubble.objects.get(name=rec[2] if rec[2] is not None else "не определён")
+            consignee = Consignee.objects.get(name=rec[6] if rec[6] is not None else "не определён")
+            destination = Destination.objects.get(name=rec[7] if rec[7] is not None else "не определён")
+            employer = Employer.objects.get(name=rec[9] if rec[9] is not None else "не определён")
+            consignor = Consignor.objects.get(name=rec[10] if rec[10] is not None else "не определён")
+            carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "не определён")
+            place = Place.objects.get(name=rec[5] if rec[5] is not None else "не определён")
         except ObjectDoesNotExist as err:
             print(rec[7], err)
             return 'update_data'
@@ -76,7 +74,11 @@ def records_sync(data):
         except Task.DoesNotExist:
             try:
                 task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
-                            consignor=consignor, rubble=rubble, status=2, date=datetime.datetime.now())
+                            consignor=consignor, rubble=rubble, status=2,
+                            date=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
+                                                   minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
+                            cargo_type=RubbleRoot.objects.get(name="не определён"),
+                            cargo_quality=RubbleQuality.objects.get(name="не определён"))
                 task.save()
             except Exception as err:
                 print(err, rec)

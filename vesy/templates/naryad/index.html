@@ -24,7 +24,7 @@
             {% for task in dostavka %}
             <tr>
                 <td>{{ task.id }}</td>
-                <td class="datedit">{{ task.date }}</td>
+                <td class="datedit">{{ task.date|date:'Y-m-d\TH:i' }}</td>
                 <td>{{ task.contractor }}</td>
                 <td>{{ task.comments }}</td>
                 <td>{{ task.rubble }}</td>
@@ -37,9 +37,9 @@
             </tr>
 
             {% endfor %}
-            <tr style="background-color: yellowgreen;">
+            <!--tr style="background-color: yellowgreen;">
                 <td colspan="11">САМОВЫВОЗ</td>
-            </tr>
+            </tr-->
             {% for task in samovyvoz %}
             <tr>
                 <td>{{ task.id }}</td>

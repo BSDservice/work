@@ -23,6 +23,12 @@
     <script src="{% static 'js/tabledit.min.js' %}"></script>
     <script>
     $(document).ready(function(){
+        function update()
+        {
+            $.post("{% url 'update' %}", {suggest: txt}, function(result){
+                $("span").html(result);
+        });
+        }
         function getCookie(c_name)
             {
                 if (document.cookie.length > 0)
@@ -44,7 +50,7 @@
         headers: { "X-CSRFToken": getCookie("csrftoken") }
         });
         $('#editable_table').Tabledit({
-            url:"{% url 'update_task' task_id=0 %}",
+            url:"{% url 'update_task'%}",
             hideIdentifier: true,
 
             buttons: {
@@ -88,6 +94,7 @@
         for (i = 0; i < x.length; i++) {
             x[i].setAttribute("type", "datetime-local");
         }
+
     });
 
 

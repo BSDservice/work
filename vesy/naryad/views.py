@@ -147,7 +147,7 @@ def add_task(request):
 
 
 @login_required
-def update_task(request, task_id):
+def update_task(request):
     """
     if request.method == 'GET' and task_id == 0:
         task_id = request.GET.get('task_id')
@@ -156,17 +156,18 @@ def update_task(request, task_id):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         task = Task.objects.get(id=task_id)
+        if request.POST.get('action') == 'delete':
+            task.status = '3'
+            task.save()
+            return redirect('naryad')
         form = TaskFormUpdate(request.POST)
         if form.is_valid():
             task.date = form.cleaned_data['date']
             task.comments = form.cleaned_data['comments']
             task.daily_plan = form.cleaned_data['daily_plan']
-            task.total_plan = form.cleaned_data['total_plan']
-            task.status = form.cleaned_data['status']
             task.hours = form.cleaned_data['hours']
             task.cargo_type = form.cleaned_data['cargo_type']
             task.cargo_quality = form.cleaned_data['cargo_quality']
-            task.place = form.cleaned_data['place']
             task.save()
             return redirect('naryad')
         else:
@@ -182,6 +183,10 @@ def update_task(request, task_id):
                                        'cargo_quality': task.cargo_quality}).as_p()
         return render(request, 'naryad/edit.html', {'form': form, 'task': task})
 
+
+@login_required
+def update(request):
+    pass
 
 """
 consignee, employer, consignor, destination, place, total_plan, daily_plan, status, rubble, hours
