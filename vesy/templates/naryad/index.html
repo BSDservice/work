@@ -14,8 +14,10 @@
                 <th>груз в ттн</th>
                 <th>грузим<br>фактически</th>
                 <th>качество</th>
-                <th>суточный</th>
-                <th>вывезено</th>
+                <th>общий<br>объём</th>
+                <th>общий<br>остаток</th>
+                <th>суточный<br>объём</th>
+                <th>выполнено</th>
                 <th>пункт выгрузки</th>
                 <th>время приёмки</th>
             </tr>
@@ -30,6 +32,8 @@
                 <td>{{ task.rubble }}</td>
                 <td>{{ task.cargo_type }}</td>
                 <td>{{ task.cargo_quality }}</td>
+                <td>{{ task.total_plan }}</td>
+                <td>{{ task.to_finish_total_plan}}</td>
                 <td>{{ task.daily_plan }}</td>
                 <td>{{ task.daily_shipped }}</td>
                 <td>{{ task.destination }}</td>
@@ -49,6 +53,8 @@
                 <td>{{ task.rubble }}</td>
                 <td>{{ task.cargo_type }}</td>
                 <td>{{ task.cargo_quality }}</td>
+                <td>{{ task.total_plan }}</td>
+                <td>{{ task.to_finish_total_plan}}</td>
                 <td>{{ task.daily_plan }}</td>
                 <td>{{ task.daily_shipped }}</td>
                 <td>{{ task.destination }}</td>

@@ -37,7 +37,7 @@ class TaskFormUpdate(forms.Form):
     cargo_type = forms.ModelChoiceField(widget=forms.Select, queryset=RubbleRoot.objects.all(), label='Фактический груз')
     cargo_quality = forms.ModelChoiceField(widget=forms.Select, queryset=RubbleQuality.objects.all(), label='Качество груза', required=False)
     # place = forms.ModelChoiceField(widget=forms.Select, queryset=Place.objects.all(), label='Место погрузки', required=False)
-    # total_plan = forms.IntegerField(label='Общий объем')
+    total_plan = forms.IntegerField(label='Общий объем')
     daily_plan = forms.IntegerField(label='Суточный объем')
     """
     TASK_STATUS = (

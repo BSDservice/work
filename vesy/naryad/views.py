@@ -59,34 +59,23 @@ def naryad(request):
     Отображает задания
     """
     tasks = Task.objects.filter(status='2').order_by('status', 'contractor')
+    if datetime.datetime.now().time() < datetime.time(hour=8):
+        point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0) - datetime.timedelta(days=1)
+    else:
+        point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
+
     for task in tasks:
         task.cars_on_loading = 0
         records = Record.objects.filter(task=task, date2__gt=task.date, status__in=['1', '2'])
         shipped = records.aggregate(Sum('weight'))['weight__sum']
-        daily = 0
-        x = datetime.datetime.now().time() < task.date.time()
-        for rec in records:
-            if x:
-                if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
-                                                               minute=task.date.time().minute,
-                                                               second=task.date.time().second)+datetime.timedelta(days=-1):
-                    daily += rec.weight
-            else:
-                if rec.date2 > datetime.datetime.now().replace(hour=task.date.time().hour,
-                                                               minute=task.date.time().minute,
-                                                               second=task.date.time().second):
-                    daily += rec.weight
-            if rec.status == '1':
-                task.cars_on_loading += 1
-
         task.shipped = shipped if shipped else 0
+        daily = records.filter(date2__gt=point).aggregate(Sum('weight'))['weight__sum']
         task.daily_shipped = daily if daily else 0
+        task.cars_on_loading = records.filter(status='1').count()
         task.finish()
         task.check_status()
-        try:
-            task.save()
-        except Exception:
-            print(task)
+        task.save()
+
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     cargo_type = {str(i["id"]): i["name"] for i in RubbleRoot.objects.values() if i["name"] is not None}
@@ -148,40 +137,30 @@ def add_task(request):
 
 @login_required
 def update_task(request):
-    """
-    if request.method == 'GET' and task_id == 0:
-        task_id = request.GET.get('task_id')
-    task = Task.objects.get(id=task_id)
-    """
+
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         task = Task.objects.get(id=task_id)
         if request.POST.get('action') == 'delete':
             task.status = '3'
             task.save()
-            return redirect('naryad')
+            return JsonResponse({'status_x': 'OK'})
         form = TaskFormUpdate(request.POST)
         if form.is_valid():
             task.date = form.cleaned_data['date']
             task.comments = form.cleaned_data['comments']
             task.daily_plan = form.cleaned_data['daily_plan']
+            task.total_plan = form.cleaned_data['total_plan']
             task.hours = form.cleaned_data['hours']
             task.cargo_type = form.cleaned_data['cargo_type']
             task.cargo_quality = form.cleaned_data['cargo_quality']
+            task.finish()
             task.save()
-            return redirect('naryad')
+            return JsonResponse({'task_id': task_id, })
         else:
             print(form.errors)
             print(request.POST)
             return redirect('naryad')
-    else:
-        form = TaskFormUpdate(initial={'date': task.date, 'contractor': task.contractor, 'comments': task.comments,
-                                       'consignee': task.consignee, 'employer': task.employer, 'consignor': task.consignor,
-                                       'destination': task.destination, 'place': task.place, 'total_plan': task.total_plan,
-                                       'daily_plan': task.daily_plan, 'status': task.status, 'rubble': task.rubble,
-                                       'hours': task.hours, 'cargo_type': task.cargo_type,
-                                       'cargo_quality': task.cargo_quality}).as_p()
-        return render(request, 'naryad/edit.html', {'form': form, 'task': task})
 
 
 @login_required

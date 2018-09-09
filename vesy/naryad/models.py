@@ -37,7 +37,7 @@ class Task(models.Model):
     def finish(self):
         """Обновляет остатки по заданию"""
         self.to_finish_total_plan = decimal.Decimal(self.total_plan if self.total_plan else 0) - self.shipped
-        self.to_finish_daily_plan = decimal.Decimal(self.daily_plan if self.daily_plan else 0) - self.daily_shipped
+        # self.to_finish_daily_plan = decimal.Decimal(self.daily_plan if self.daily_plan else 0) - self.daily_shipped
 
     def check_status(self):
         """Ставит заданию статус 'Выполнено', если общий объём перевезён"""
