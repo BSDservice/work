@@ -49,6 +49,7 @@
         $.ajaxSetup({
         headers: { "X-CSRFToken": getCookie("csrftoken") }
         });
+        var errors;
         $('#editable_table').Tabledit({
             url:"{% url 'update_task'%}",
             hideIdentifier: true,
@@ -83,10 +84,41 @@
                 editable:[[1, 'date'], [3, 'comments'], [5, 'cargo_type', list_cargo_type], [6, 'cargo_quality', list_cargo_quality], [7, 'total_plan'], [9, 'daily_plan'], [12, 'hours']],
             },
 
-            onSuccess:function (data, textStatus, jqXHR) {
-                if(data.action == 'delete') {
-                    $('#'+data.id).remove();
-                }
+            onSuccess: function(data, textStatus, jqXHR) {
+                console.log('onSuccess(data, textStatus, jqXHR)');
+                console.log(data);
+                console.log(textStatus);
+                console.log(jqXHR);
+
+                var row = $("#"+data['task_id']);
+                if (data['errors']) {
+                    errors = data['errors'];
+                    console.log(row);
+                    for (var key in data['errors']) {
+                        if(data['errors'].hasOwnProperty(key)) {
+                            row.find("[name=" + "'" + key + "'" + "]").siblings("span")[0].innerHTML = data['errors'][key];
+                            row.find("[name=" + "'" + key + "'" + "]").parent().css({"background-color": "red", "color": "white"});
+                            console.log(key + ' ==> ' + data['errors'][key])
+                        }
+                    }
+                } else {
+                    if (errors) {
+                        for (var key in errors) {
+                            if (errors.hasOwnProperty(key)) {
+                                row.find("[name=" + "'" + key + "'" + "]").parent().css({
+                                    "background-color": "inherit",
+                                    "color": "inherit"
+                                });
+                            }
+                        }
+                    }
+                    row.find(".to-finish-total-plan")[0].innerHTML = data['to_finish_total_plan'];
+                    }
+
+            },
+
+            onFail: function(jqXHR, textStatus, errorThrown) {
+                alert('Обрыв связи с сервером!');
             },
 
         });

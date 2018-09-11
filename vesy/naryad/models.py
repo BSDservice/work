@@ -43,15 +43,6 @@ class Task(models.Model):
         """Ставит заданию статус 'Выполнено', если общий объём перевезён"""
         if self.total_plan is not None and self.total_plan < self.shipped:
             self.status = 3
-    
-    def __sub__(self, Record):
-        """
-        вычесть вес или убрать из очереди при удалении записи
-        """
-        if Record.weight is None and Record.status == '1':
-            self.cars_on_loading -= 1
-        else:
-            self.shipped = self.shipped - Record.weight
 
     def __str__(self):
         return 'контрагент: {}; \nгруз: {}; отгружено {}; \nпункт разгрузки{}'.format(self.contractor, self.rubble, str(self.shipped), self.destination)

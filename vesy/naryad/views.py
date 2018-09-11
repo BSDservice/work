@@ -147,6 +147,11 @@ def update_task(request):
             return JsonResponse({'status_x': 'OK'})
         form = TaskFormUpdate(request.POST)
         if form.is_valid():
+            if datetime.datetime.now().time() < datetime.time(hour=8):
+                point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0) - datetime.timedelta(
+                    days=1)
+            else:
+                point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
             task.date = form.cleaned_data['date']
             task.comments = form.cleaned_data['comments']
             task.daily_plan = form.cleaned_data['daily_plan']
@@ -155,12 +160,20 @@ def update_task(request):
             task.cargo_type = form.cleaned_data['cargo_type']
             task.cargo_quality = form.cleaned_data['cargo_quality']
             task.finish()
+            records = Record.objects.filter(task=task, date2__gt=task.date, status__in=['1', '2'])
+            shipped = records.aggregate(Sum('weight'))['weight__sum']
+            task.shipped = shipped if shipped else 0
+            daily = records.filter(date2__gt=point).aggregate(Sum('weight'))['weight__sum']
+            task.daily_shipped = daily if daily else 0
+            task.cars_on_loading = records.filter(status='1').count()
+            task.finish()
+            task.check_status()
             task.save()
-            return JsonResponse({'task_id': task_id, })
+            return JsonResponse({'to_finish_total_plan': task.to_finish_total_plan, 'task_id': task_id, })
         else:
             print(form.errors)
             print(request.POST)
-            return redirect('naryad')
+            return JsonResponse({'errors': form.errors, 'task_id': task_id, })
 
 
 @login_required
