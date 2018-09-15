@@ -2,6 +2,7 @@
 
 {% block content %}
 <div>{% csrf_token %}</div>
+<div id="last_changes_id" style="display: none">{{ last_changes_id }}</div>
 <div>
     <div class="table-responsive">
         <table id="editable_table" class="table table-bordered table-striped">

@@ -127,6 +127,16 @@
             x[i].setAttribute("type", "datetime-local");
         }
 
+        setInterval(function () {
+            var last_change_id = $("#last_changes_id").html();
+            $.post("{% url 'update' %}",
+                {
+                    id: last_change_id,
+                },
+                function(data, status){
+                    alert("Data: " + data + "\nStatus: " + status);
+                });
+        }, 60000)
     });
 
 

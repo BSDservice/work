@@ -1,5 +1,5 @@
 from .models import Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place, Consignee,\
-                          Employer, Consignor, Car, Task, AllocatedVolume
+                          Employer, Consignor, Car, Task, AllocatedVolume, LastChanges
 from django.core.exceptions import ObjectDoesNotExist
 import datetime
 import decimal
@@ -131,9 +131,11 @@ def records_sync(data):
             except Exception as err:
                 print(err, rec)
 
+        task_to_log = LastChanges(task=task, date=datetime.datetime.now())
         task.check_status()
         task.save()
         obj.save()
+        task_to_log.save()
         try:
             a_vol = AllocatedVolume.objects.get(task=task, carrier=carrier)
             a_vol.shipped = a_vol.shipped + obj.weight

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .models import Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place, Consignee,\
-                          Employer, Consignor, Car, Task, AllocatedVolume
+from .models import Record, Contractor, Carrier, Rubble, RubbleRoot, RubbleQuality, Destination, Place,\
+                          Employer, Task, LastChanges
 import json
 from django.views.decorators.csrf import csrf_exempt
 import datetime
@@ -9,6 +9,7 @@ from .tools import records_sync, save_data
 from django.contrib.auth.decorators import login_required
 from .forms import TaskFormUpdate, TaskForm
 from django.db.models import Sum
+from django.core.serializers import serialize
 
 
 @csrf_exempt
@@ -58,6 +59,7 @@ def naryad(request):
     """
     Отображает задания
     """
+
     tasks = Task.objects.filter(status='2').order_by('daily_shipped')  # .distinct('daily_shipped')
     if datetime.datetime.now().time() < datetime.time(hour=8):
         point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0) - datetime.timedelta(days=1)
@@ -75,12 +77,13 @@ def naryad(request):
         task.finish()
         task.check_status()
         task.save()
-
+    last_changes = LastChanges.objects.latest('id')
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     cargo_type = {str(i["id"]): i["name"] for i in RubbleRoot.objects.values() if i["name"] is not None}
     cargo_quality = {str(i["id"]): i["name"] for i in RubbleQuality.objects.values() if i["name"] is not None}
-    return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz, 'cargo_type': cargo_type, 'cargo_quality': cargo_quality})
+    return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz, 'cargo_type': cargo_type,
+                                                 'cargo_quality': cargo_quality, 'last_changes_id': last_changes.id})
 
 
 @login_required
@@ -169,6 +172,8 @@ def update_task(request):
             task.finish()
             task.check_status()
             task.save()
+            task_to_log = LastChanges(task=task, date=datetime.datetime.now())
+            task_to_log.save()
             return JsonResponse({'to_finish_total_plan': task.to_finish_total_plan, 'task_id': task_id, })
         else:
             print(form.errors)
@@ -178,7 +183,13 @@ def update_task(request):
 
 @login_required
 def update(request):
-    pass
+    if request.method == "POST":
+        recs = LastChanges.objects.filter(id__gt=request.POST.get('id'))
+        tmp = set()
+        for rec in recs:
+            tmp.add(rec.task)
+
+        return JsonResponse(serialize('json', tmp), safe=False)
 
 """
 consignee, employer, consignor, destination, place, total_plan, daily_plan, status, rubble, hours

@@ -175,3 +175,6 @@ class AllocatedVolume(models.Model):
     shipped = models.FloatField(verbose_name='отгружено', null=True)
 
 
+class LastChanges(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    date = models.DateTimeField()
