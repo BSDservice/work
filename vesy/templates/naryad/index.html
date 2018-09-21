@@ -19,6 +19,7 @@
                 <th>общий<br>остаток</th>
                 <th>суточный<br>объём</th>
                 <th>выполнено</th>
+                <th>м.</th>
                 <th>пункт выгрузки</th>
                 <th>время приёмки</th>
             </tr>
@@ -36,28 +37,28 @@
                 <td>{{ task.total_plan }}</td>
                 <td class="to-finish-total-plan">{{ task.to_finish_total_plan}}</td>
                 <td>{{ task.daily_plan }}</td>
-                <td>{{ task.daily_shipped }}</td>
+                <td class="daily_shipped">{{ task.daily_shipped }}</td>
+                <td>{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
                 <td>{{ task.hours }}</td>
             </tr>
 
             {% endfor %}
-            <!--tr style="background-color: yellowgreen;">
-                <td colspan="11">САМОВЫВОЗ</td>
-            </tr-->
+            <tr id="razdel"></tr>
             {% for task in samovyvoz %}
             <tr>
                 <td>{{ task.id }}</td>
-                <td>{{ task.date }}</td>
+                <td class="datedit">{{ task.date|date:'Y-m-d\TH:i' }}
                 <td>{{ task.contractor }}</td>
                 <td>{{ task.comments }}</td>
                 <td>{{ task.rubble }}</td>
                 <td>{{ task.cargo_type }}</td>
                 <td>{{ task.cargo_quality }}</td>
                 <td>{{ task.total_plan }}</td>
-                <td>{{ task.to_finish_total_plan}}</td>
+                <td class="to-finish-total-plan">{ task.to_finish_total_plan}}</td>
                 <td>{{ task.daily_plan }}</td>
-                <td>{{ task.daily_shipped }}</td>
+                <td class="daily_shipped">{{ task.daily_shipped }}</td>
+                <td>{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
                 <td>{{ task.hours }}</td>
             </tr>

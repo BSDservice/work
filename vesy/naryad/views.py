@@ -68,14 +68,13 @@ def naryad(request):
 
     for task in tasks:
         task.cars_on_loading = 0
-        records = Record.objects.filter(task=task, date2__gt=task.date, status__in=['1', '2'])
+        records = Record.objects.filter(task=task, date2__gt=task.date, status='2')
         shipped = records.aggregate(Sum('weight'))['weight__sum']
         task.shipped = shipped if shipped else 0
         daily = records.filter(date2__gt=point).aggregate(Sum('weight'))['weight__sum']
         task.daily_shipped = daily if daily else 0
-        task.cars_on_loading = records.filter(status='1').count()
+        task.cars_on_loading = Record.objects.filter(task=task, date2__gt=task.date, status='1').count()
         task.finish()
-        task.check_status()
         task.save()
     last_changes = LastChanges.objects.latest('id')
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
@@ -191,6 +190,3 @@ def update(request):
 
         return JsonResponse(serialize('json', tmp), safe=False)
 
-"""
-consignee, employer, consignor, destination, place, total_plan, daily_plan, status, rubble, hours
-"""

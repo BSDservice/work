@@ -57,7 +57,6 @@ def records_sync(data):
             carrier = Carrier.objects.get(name=rec[4] if rec[4] is not None else "не определён")
             place = Place.objects.get(name=rec[5] if rec[5] is not None else "не определён")
         except ObjectDoesNotExist as err:
-            print(rec[7], err)
             return 'update_data'
 
         try:
@@ -69,16 +68,15 @@ def records_sync(data):
                 task.status = '2'
 
         except Task.DoesNotExist:
-            try:
-                task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
-                            consignor=consignor, rubble=rubble, status=2,
-                            date=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
-                                                   minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
-                            cargo_type=RubbleRoot.objects.get(name="не определён"),
-                            cargo_quality=RubbleQuality.objects.get(name="не определён"))
-                task.save()
-            except Exception as err:
-                print(err, rec)
+
+            task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
+                        consignor=consignor, rubble=rubble, status=2,
+                        date=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
+                                               minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
+                        cargo_type=RubbleRoot.objects.get(name="не определён"),
+                        cargo_quality=RubbleQuality.objects.get(name="не определён"))
+            task.save()
+
         except Task.MultipleObjectsReturned as err:
             tasks_list_duplicate = Task.objects.filter(contractor=contractor, consignee=consignee, destination=destination,
                                                        employer=employer, consignor=consignor, rubble=rubble)
@@ -86,18 +84,14 @@ def records_sync(data):
                 if task_dup is tasks_list_duplicate[0]:
                     continue
                 else:
-                    try:
-                        records_to_detach = Record.objects.filter(task=task_dup)
-                        for record in records_to_detach:
-                            record.task = tasks_list_duplicate[0]
-                            record.save()
-                        print(task_dup.delete())
-                    except Exception as err:
-                        print(err)
+                    records_to_detach = Record.objects.filter(task=task_dup)
+                    for record in records_to_detach:
+                        record.task = tasks_list_duplicate[0]
+                        record.save()
+                    task_dup.delete()
 
         if rec[13] is not None:
-            date2 = datetime.datetime(year=rec[13][0], month=rec[13][1], day=rec[13][2], hour=rec[13][3],
-                                      minute=rec[13][4], second=rec[13][5], microsecond=rec[13][6])
+            date2 = datetime.datetime(year=rec[13][0], month=rec[13][1], day=rec[13][2], hour=rec[13][3], minute=rec[13][4], second=rec[13][5], microsecond=rec[13][6])
         else:
             date2 = rec[13]
         
@@ -122,14 +116,11 @@ def records_sync(data):
             obj.status = rec[18]
             obj.task = task
         except Record.DoesNotExist:
-            try:
-                obj = Record(date1=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
-                                                     minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
-                             ttn=rec[11], car=car, contractor=contractor, rubble=rubble, weight=weight,
-                             consignee=consignee, destination=destination, employer=employer, consignor=consignor,
-                             carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
-            except Exception as err:
-                print(err, rec)
+            obj = Record(date1=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
+                                                 minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
+                         ttn=rec[11], car=car, contractor=contractor, rubble=rubble, weight=weight,
+                         consignee=consignee, destination=destination, employer=employer, consignor=consignor,
+                         carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
 
         task_to_log = LastChanges(task=task, date=datetime.datetime.now())
         task.check_status()

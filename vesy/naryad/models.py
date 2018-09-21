@@ -11,8 +11,8 @@ class Task(models.Model):
     consignor = models.ForeignKey('Consignor', on_delete=models.CASCADE, verbose_name='грузоотправитель')
     destination = models.ForeignKey('Destination', on_delete=models.CASCADE, verbose_name='пункт назначения')
     place = models.ForeignKey('Place', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='место погрузки')
-    total_plan = models.SmallIntegerField(verbose_name='общий объем', null=True)
-    daily_plan = models.SmallIntegerField(verbose_name='суточный объем', null=True)
+    total_plan = models.SmallIntegerField(verbose_name='общий объем', null=True, blank=True, default=0)
+    daily_plan = models.SmallIntegerField(verbose_name='суточный объем', null=True, blank=True, default=0)
     TASK_STATUS = (
         ('1', 'черновик'),
         ('2', 'к выполнению'),
@@ -25,7 +25,7 @@ class Task(models.Model):
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
     rubble = models.ForeignKey('Rubble', on_delete=models.CASCADE, verbose_name='выписываемый материал')
     hours = models.CharField(max_length=20, verbose_name='Часы приема', null=True)
-    comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True)
+    comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True, default='')
     cars_on_loading = models.SmallIntegerField(default=0, verbose_name='машины в заводе')
     contact = models.CharField(max_length=200, verbose_name='Контакт', null=True, blank=True)
     cargo_type = models.ForeignKey('RubbleRoot', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='фактический груз')
@@ -75,7 +75,7 @@ class Record(models.Model):
         ('2', 'убыл'),
         ('D', 'удалена')
     )
-    status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
+    status = models.CharField(max_length=1, choices=CAR_STATUS, default='1', help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
     def __str__(self):

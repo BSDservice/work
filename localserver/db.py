@@ -61,7 +61,7 @@ class SyncDB:
                           'UPLOADINGPOINTS': 'Destination',
                           'TYPES_OF_PRODUCTS': 'RubbleRoot'}
         data_for_web = {}
-        r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_data'})
+        r = requests.get('http://192.168.1.200:8000/data_sync/get', params={'type': 'get_data'})
         response = json.loads(r.text)  # список ID записей на WEB сервере
         for tab in table_for_sync.items():
             cursor.execute("SELECT DISTINCT NAME FROM " + tab[0] + " WHERE DELETED = 'F'")
@@ -69,7 +69,7 @@ class SyncDB:
             tmp.append(('не определён',))
             data_for_web[tab[1]] = [i[0] for i in tmp if i[0] not in response[tab[1]]]
 
-        r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_data'}, data=json.dumps(
+        r = requests.post('http://192.168.1.200:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_data'}, data=json.dumps(
             {'data': data_for_web}))
         if r.text == 'Синхронизация прошла успешно':
             pass
@@ -94,7 +94,7 @@ class SyncDB:
         data = list(map(list, data))
 
         SyncDB.cast_types_for_json(data)
-        r = requests.get('http://127.0.0.1:8000/data_sync/get', params={'type': 'get_weights'})
+        r = requests.get('http://192.168.1.200:8000/data_sync/get', params={'type': 'get_weights'})
         response = json.loads(r.text)  # словарь {'weights':{ID записи: статус, ...} на WEB сервере
         records = dict()
         records['weights'] = {i[15]: i for i in data if str(i[15]) not in response['weights'].keys() or response['weights'][str(i[15])] != i[18]}  # записи ID которых нет на WEB или статус которых изменился
@@ -114,11 +114,11 @@ class SyncDB:
                 id_for_del_list = [i[2] for i in tmp]
                 records['delete'] = id_for_del_list
 
-        r = requests.post('http://127.0.0.1:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
+        r = requests.post('http://192.168.1.200:8000/data_sync/post', headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                           data=json.dumps(records))
         if r.text == 'update_data':
             self.sync_data(cursor, file)
-            r = requests.post('http://127.0.0.1:8000/data_sync/post',
+            r = requests.post('http://192.168.1.200:8000/data_sync/post',
                               headers={'user-agent': 'my-app/0.0.1', 'type': 'post_records'},
                               data=json.dumps(records))
             if r.text == 'update_data':

@@ -25,7 +25,7 @@ SECRET_KEY = 'owy9-00diuix)-z0qxh@i7257b2v^_d#a-))2zn7su)nf#jc0v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'donstone.pythonanywhere.com']  # donstone.pythonanywhere.com donstone Fktrcfylh88
+ALLOWED_HOSTS = ['localhost', '192.168.1.200', '127.0.0.1', 'donstone.pythonanywhere.com']  # donstone.pythonanywhere.com donstone Fktrcfylh88
 
 
 # Application definition

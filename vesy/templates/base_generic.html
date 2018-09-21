@@ -93,12 +93,10 @@
                 var row = $("#"+data['task_id']);
                 if (data['errors']) {
                     errors = data['errors'];
-                    console.log(row);
                     for (var key in data['errors']) {
                         if(data['errors'].hasOwnProperty(key)) {
                             row.find("[name=" + "'" + key + "'" + "]").siblings("span")[0].innerHTML = data['errors'][key];
                             row.find("[name=" + "'" + key + "'" + "]").parent().css({"background-color": "red", "color": "white"});
-                            console.log(key + ' ==> ' + data['errors'][key])
                         }
                     }
                 } else {
@@ -127,6 +125,9 @@
             x[i].setAttribute("type", "datetime-local");
         }
 
+        $('#razdel').empty();
+        $('#razdel').append('<td colspan="13"><h3> С А М О В Ы В О З</h3></td>')
+
         setInterval(function () {
             var last_change_id = $("#last_changes_id").html();
             $.post("{% url 'update' %}",
@@ -134,7 +135,44 @@
                     id: last_change_id,
                 },
                 function(data, status){
-                    alert("Data: " + data + "\nStatus: " + status);
+
+                    if (data.length > 2){
+                        var obj_list = JSON.parse(data);
+                        for (var i=0; i<obj_list.length; i++){
+                            var obj = new Object(obj_list[i]);
+                            var row = $('#' + String(obj['pk']));
+                            var fields = obj['fields'];
+                            /*дата*/
+                            row.find('[name="date"]').prev("span").text(fields['date']);
+                            row.find('[name="date"]').val(fields['date']);
+                            /*комментарий*/
+                            row.find('[name="comments"]').prev("span").text(fields['comments']);
+                            row.find('[name="comments"]').val(fields['comments']);
+                            /*род груза*/
+
+                            /*row.find('[name="cargo_type"]').find(':selected').remove(':selected');*/
+                            row.find('[name="cargo_type"]').find('[value="'+fields['cargo_type']+'"]').attr('selected', 1);
+                            row.find('[name="cargo_type"]').prev("span").text(row.find('[name="cargo_type"]').find(':selected').text());
+                            /*марка груза*/
+
+                            /*row.find('[name="cargo_quality"]').find(':selected').remove(':selected');*/
+                            row.find('[name="cargo_quality"]').find('[value="'+fields['cargo_quality']+'"]').attr('selected', 1);
+                            row.find('[name="cargo_quality"]').prev("span").text(row.find('[name="cargo_quality"]').find(':selected').text());
+                            /*общий объём*/
+                            row.find('[name="total_plan"]').prev("span").text(fields['total_plan']);
+                            row.find('[name="total_plan"]').val(fields['total_plan']);
+                             /*общий остаток*/
+                            row.find('[class="to_finish_total_plan"]').text(fields['to_finish_total_plan']);
+                            /*суточный план*/
+                            row.find('[name="daily_plan"]').prev("span").text(fields['daily_plan']);
+                            row.find('[name="daily_plan"]').val(fields['daily_plan']);
+                            /*вывезено за сутки*/
+                            row.find('[class="daily_shipped"]').text(fields['daily_shipped']);
+                            /*время приёма*/
+                            row.find('[name="hours"]').prev("span").text(fields['hours']);
+                            row.find('[name="hours"]').val(fields['hours']);
+                        }
+                    }
                 });
         }, 60000)
     });
