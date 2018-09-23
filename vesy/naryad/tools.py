@@ -30,12 +30,12 @@ def save_data(data):
 def records_sync(data):
     """
     Создает или обновляет записи о взвешивании, сопостовляя записи заданиям на отгрузку, если нет таковых создаёт их.
-    Сверяет отгруженный объем по заданию и меняет статус задания если объём вывезен.
-    Вносит изменения в выделенный объём перевозчику.
     """
     if 'delete' in data.keys():
         fetch_del = Record.objects.filter(wesy_id__in=data['delete'])
         for rec in fetch_del:
+            rec.task.cars_on_loading -= 1
+            rec.task.save()
             rec.status = 'D'
             rec.save()
 
@@ -64,7 +64,7 @@ def records_sync(data):
                                     employer=employer, consignor=consignor, rubble=rubble)
             if task.status == '3':
                 task.date = datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
-                                              minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6])
+                                              minute=rec[12][4])
                 task.status = '2'
 
         except Task.DoesNotExist:
@@ -72,7 +72,7 @@ def records_sync(data):
             task = Task(contractor=contractor, consignee=consignee, destination=destination, employer=employer,
                         consignor=consignor, rubble=rubble, status=2,
                         date=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
-                                               minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
+                                               minute=rec[12][4]),
                         cargo_type=RubbleRoot.objects.get(name="не определён"),
                         cargo_quality=RubbleQuality.objects.get(name="не определён"))
             task.save()
@@ -115,15 +115,17 @@ def records_sync(data):
             obj.wesy_id = rec[15]
             obj.status = rec[18]
             obj.task = task
+            task.cars_on_loading -= 1
         except Record.DoesNotExist:
             obj = Record(date1=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
                                                  minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
                          ttn=rec[11], car=car, contractor=contractor, rubble=rubble, weight=weight,
                          consignee=consignee, destination=destination, employer=employer, consignor=consignor,
                          carrier=carrier, place=place, wesy_id=rec[15], status=rec[18], task=task, date2=date2)
+            if rec[18] == 1:
+                task.cars_on_loading += 1
 
         task_to_log = LastChanges(task=task, date=datetime.datetime.now())
-        task.check_status()
         task.save()
         obj.save()
         task_to_log.save()

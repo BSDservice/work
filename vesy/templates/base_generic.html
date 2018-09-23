@@ -50,86 +50,90 @@
         headers: { "X-CSRFToken": getCookie("csrftoken") }
         });
         var errors;
-        $('#editable_table').Tabledit({
-            url:"{% url 'update_task'%}",
-            hideIdentifier: true,
+        var make_tabledit = function(){
+            $('#editable_table').Tabledit({
+                url:"{% url 'update_task'%}",
+                hideIdentifier: true,
 
-            buttons: {
-                edit: {
-                    class: 'btn btn-sm btn-default',
-                    html: '<span class="fa fa-pencil"></span>',
-                    action: 'edit'
-                },
-                delete: {
-                    class: 'btn btn-sm btn-default',
-                    html: '<span class="fa fa-trash"></span>',
-                    action: 'delete'
-                },
-                save: {
-                    class: 'btn btn-sm btn-success',
-                    html: 'Сохранить'
-                },
-                restore: {
-                    class: 'btn btn-sm btn-warning',
-                    html: 'Восстановить',
-                    action: 'restore'
-                },
-                confirm: {
-                    class: 'btn btn-sm btn-danger',
-                    html: 'Подтвердить'
-                }
-            },
-            columns:{
-                identifier:[0, "task_id"],
-                editable:[[1, 'date'], [3, 'comments'], [5, 'cargo_type', list_cargo_type], [6, 'cargo_quality', list_cargo_quality], [7, 'total_plan'], [9, 'daily_plan'], [12, 'hours']],
-            },
-
-            onSuccess: function(data, textStatus, jqXHR) {
-                console.log('onSuccess(data, textStatus, jqXHR)');
-                console.log(data);
-                console.log(textStatus);
-                console.log(jqXHR);
-
-                var row = $("#"+data['task_id']);
-                if (data['errors']) {
-                    errors = data['errors'];
-                    for (var key in data['errors']) {
-                        if(data['errors'].hasOwnProperty(key)) {
-                            row.find("[name=" + "'" + key + "'" + "]").siblings("span")[0].innerHTML = data['errors'][key];
-                            row.find("[name=" + "'" + key + "'" + "]").parent().css({"background-color": "red", "color": "white"});
-                        }
+                buttons: {
+                    edit: {
+                        class: 'btn btn-sm btn-default',
+                        html: '<span class="fa fa-pencil"></span>',
+                        action: 'edit'
+                    },
+                    delete: {
+                        class: 'btn btn-sm btn-default',
+                        html: '<span class="fa fa-trash"></span>',
+                        action: 'delete'
+                    },
+                    save: {
+                        class: 'btn btn-sm btn-success',
+                        html: 'Сохранить'
+                    },
+                    restore: {
+                        class: 'btn btn-sm btn-warning',
+                        html: 'Восстановить',
+                        action: 'restore'
+                    },
+                    confirm: {
+                        class: 'btn btn-sm btn-danger',
+                        html: 'Подтвердить'
                     }
-                } else {
-                    if (errors) {
-                        for (var key in errors) {
-                            if (errors.hasOwnProperty(key)) {
-                                row.find("[name=" + "'" + key + "'" + "]").parent().css({
-                                    "background-color": "inherit",
-                                    "color": "inherit"
-                                });
+                },
+                columns:{
+                    identifier:[0, "task_id"],
+                    editable:[[1, 'date'], [3, 'comments'], [5, 'cargo_type', list_cargo_type], [6, 'cargo_quality', list_cargo_quality], [7, 'total_plan'], [9, 'daily_plan'], [13, 'hours']],
+                },
+
+                onSuccess: function(data, textStatus, jqXHR) {
+                    console.log('onSuccess(data, textStatus, jqXHR)');
+                    console.log(data);
+                    console.log(textStatus);
+                    console.log(jqXHR);
+
+                    var row = $("#"+data['task_id']);
+                    if (data['errors']) {
+                        errors = data['errors'];
+                        for (var key in data['errors']) {
+                            if(data['errors'].hasOwnProperty(key)) {
+                                row.find("[name=" + "'" + key + "'" + "]").siblings("span")[0].innerHTML = data['errors'][key];
+                                row.find("[name=" + "'" + key + "'" + "]").parent().css({"background-color": "red", "color": "white"});
                             }
                         }
-                    }
-                    row.find(".to-finish-total-plan")[0].innerHTML = data['to_finish_total_plan'];
-                    }
+                    } else {
+                        if (errors) {
+                            for (var key in errors) {
+                                if (errors.hasOwnProperty(key)) {
+                                    row.find("[name=" + "'" + key + "'" + "]").parent().css({
+                                        "background-color": "inherit",
+                                        "color": "inherit"
+                                    });
+                                }
+                            }
+                        }
+                        row.find(".to-finish-total-plan")[0].innerHTML = data['to_finish_total_plan'];
+                        }
 
-            },
+                },
 
-            onFail: function(jqXHR, textStatus, errorThrown) {
-                alert('Обрыв связи с сервером!');
-            },
+                onFail: function(jqXHR, textStatus, errorThrown) {
+                    alert('Обрыв связи с сервером!');
+                },
 
-        });
+            });
+        };
+        make_tabledit();
         var x = document.getElementsByName("date");
         for (i = 0; i < x.length; i++) {
             x[i].setAttribute("type", "datetime-local");
         }
 
         $('#razdel').empty();
-        $('#razdel').append('<td colspan="13"><h3> С А М О В Ы В О З</h3></td>')
+        $('#razdel').append('<td colspan="13" id="razdel"><h3> С А М О В Ы В О З</h3></td>')
 
         setInterval(function () {
             var last_change_id = $("#last_changes_id").html();
+            var list_tasks_id = $("#list_tasks_id").text().split(',');
             $.post("{% url 'update' %}",
                 {
                     id: last_change_id,
@@ -140,37 +144,64 @@
                         var obj_list = JSON.parse(data);
                         for (var i=0; i<obj_list.length; i++){
                             var obj = new Object(obj_list[i]);
-                            var row = $('#' + String(obj['pk']));
-                            var fields = obj['fields'];
-                            /*дата*/
-                            row.find('[name="date"]').prev("span").text(fields['date']);
-                            row.find('[name="date"]').val(fields['date']);
-                            /*комментарий*/
-                            row.find('[name="comments"]').prev("span").text(fields['comments']);
-                            row.find('[name="comments"]').val(fields['comments']);
-                            /*род груза*/
-
-                            /*row.find('[name="cargo_type"]').find(':selected').remove(':selected');*/
-                            row.find('[name="cargo_type"]').find('[value="'+fields['cargo_type']+'"]').attr('selected', 1);
-                            row.find('[name="cargo_type"]').prev("span").text(row.find('[name="cargo_type"]').find(':selected').text());
-                            /*марка груза*/
-
-                            /*row.find('[name="cargo_quality"]').find(':selected').remove(':selected');*/
-                            row.find('[name="cargo_quality"]').find('[value="'+fields['cargo_quality']+'"]').attr('selected', 1);
-                            row.find('[name="cargo_quality"]').prev("span").text(row.find('[name="cargo_quality"]').find(':selected').text());
-                            /*общий объём*/
-                            row.find('[name="total_plan"]').prev("span").text(fields['total_plan']);
-                            row.find('[name="total_plan"]').val(fields['total_plan']);
-                             /*общий остаток*/
-                            row.find('[class="to_finish_total_plan"]').text(fields['to_finish_total_plan']);
-                            /*суточный план*/
-                            row.find('[name="daily_plan"]').prev("span").text(fields['daily_plan']);
-                            row.find('[name="daily_plan"]').val(fields['daily_plan']);
-                            /*вывезено за сутки*/
-                            row.find('[class="daily_shipped"]').text(fields['daily_shipped']);
-                            /*время приёма*/
-                            row.find('[name="hours"]').prev("span").text(fields['hours']);
-                            row.find('[name="hours"]').val(fields['hours']);
+                            if (list_tasks_id.indexOf(String(obj['pk'])) != -1) {
+                                var row = $('#' + String(obj['pk']));
+                                var fields = obj['fields'];
+                                /*дата*/
+                                row.find('[name="date"]').prev("span").text(fields['date']);
+                                row.find('[name="date"]').val(fields['date']);
+                                /*комментарий*/
+                                row.find('[name="comments"]').prev("span").text(fields['comments']);
+                                row.find('[name="comments"]').val(fields['comments']);
+                                /*род груза*/
+                                /*row.find('[name="cargo_type"]').find(':selected').remove(':selected');*/
+                                row.find('[name="cargo_type"]').find('[value="' + fields['cargo_type'] + '"]').attr('selected', 1);
+                                row.find('[name="cargo_type"]').prev("span").text(row.find('[name="cargo_type"]').find(':selected').text());
+                                /*марка груза*/
+                                /*row.find('[name="cargo_quality"]').find(':selected').remove(':selected');*/
+                                row.find('[name="cargo_quality"]').find('[value="' + fields['cargo_quality'] + '"]').attr('selected', 1);
+                                row.find('[name="cargo_quality"]').prev("span").text(row.find('[name="cargo_quality"]').find(':selected').text());
+                                /*общий объём*/
+                                row.find('[name="total_plan"]').prev("span").text(fields['total_plan']);
+                                row.find('[name="total_plan"]').val(fields['total_plan']);
+                                /*общий остаток*/
+                                row.find('[class="to_finish_total_plan"]').text(fields['to_finish_total_plan']);
+                                /*суточный план*/
+                                row.find('[name="daily_plan"]').prev("span").text(fields['daily_plan']);
+                                row.find('[name="daily_plan"]').val(fields['daily_plan']);
+                                /*вывезено за сутки*/
+                                row.find('[class="daily_shipped"]').text(fields['daily_shipped']);
+                                /*машины в заводе*/
+                                row.find('[class="cars"]').text(fields['cars_on_loading']);
+                                /*время приёма*/
+                                row.find('[name="hours"]').prev("span").text(fields['hours']);
+                                row.find('[name="hours"]').val(fields['hours']);
+                            }
+                            else {
+                                var fields = obj['fields'];
+                                var row = $('<tr></tr>').attr({"id": String(obj['pk'])});
+                                var id = $('<td></td>').text(fields['id']);
+                                var date = $('<td class="datedit"></td>').text(fields['date']);
+                                var comments = $('<td></td>').text(fields['comments']);
+                                var contractor = $('<td></td>').text(fields['contractor']);
+                                var rubble = $('<td></td>').text(fields['rubble']);
+                                var rubble_root = $('<td></td>').text(list_cargo_type[fields['rubble_root']]);
+                                var rubble_quality = $('<td></td>').text(list_cargo_quality[fields['rubble_quality']]);
+                                var total_plan = $('<td></td>').text(fields['total_plan']);
+                                var to_finish_total_plan = $('<td class="to-finish-total-plan"></td>').text(fields['to_finish_total_plan']);
+                                var daily_plan = $('<td></td>').text(fields['daily_plan']);
+                                var daily_shipped = $('<td class="daily_shipped"></td>').text(fields['daily_shipped']);
+                                var cars_on_loading = $('<td class="cars"></td>').text(fields['cars_on_loading']);
+                                var destination = $('<td></td>').text(fields['destination']);
+                                var hours = $('<td></td>').text(fields['hours']);
+                                row.append(id, date, comments, contractor, rubble, rubble_root, rubble_quality, total_plan, to_finish_total_plan, daily_plan, daily_shipped, cars_on_loading, destination, hours)
+                                if (fields['employer'] == "ООО Машпром" ){
+                                    $('tbody').prepend(row);
+                                } else {
+                                    $('#razdel').after(row);
+                                }
+                                make_tabledit();
+                            }
                         }
                     }
                 });

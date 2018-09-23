@@ -24,7 +24,7 @@ class Task(models.Model):
     status = models.CharField(max_length=1, choices=TASK_STATUS, default=1, help_text='статус задания')
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
     rubble = models.ForeignKey('Rubble', on_delete=models.CASCADE, verbose_name='выписываемый материал')
-    hours = models.CharField(max_length=20, verbose_name='Часы приема', null=True)
+    hours = models.CharField(max_length=20, verbose_name='Часы приема', null=True, blank=True, default='')
     comments = models.CharField(max_length=200, verbose_name='Комментарий', null=True, blank=True, default='')
     cars_on_loading = models.SmallIntegerField(default=0, verbose_name='машины в заводе')
     contact = models.CharField(max_length=200, verbose_name='Контакт', null=True, blank=True)
@@ -71,11 +71,11 @@ class Record(models.Model):
     place = models.ForeignKey('Place', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='место погрузки')
     wesy_id = models.IntegerField(unique=True)
     CAR_STATUS = (
-        ('1', 'в заводе'),
-        ('2', 'убыл'),
+        (1, 'в заводе'),
+        (2, 'убыл'),
         ('D', 'удалена')
     )
-    status = models.CharField(max_length=1, choices=CAR_STATUS, default='1', help_text='нахождение в заводе')
+    status = models.CharField(max_length=1, choices=CAR_STATUS, default=1, help_text='нахождение в заводе')
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
     def __str__(self):

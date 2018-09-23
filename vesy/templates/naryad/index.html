@@ -3,6 +3,7 @@
 {% block content %}
 <div>{% csrf_token %}</div>
 <div id="last_changes_id" style="display: none">{{ last_changes_id }}</div>
+<div id="list_tasks_id" style="display: none">{{ list_tasks_id }}</div>
 <div>
     <div class="table-responsive">
         <table id="editable_table" class="table table-bordered table-striped">
@@ -38,7 +39,7 @@
                 <td class="to-finish-total-plan">{{ task.to_finish_total_plan}}</td>
                 <td>{{ task.daily_plan }}</td>
                 <td class="daily_shipped">{{ task.daily_shipped }}</td>
-                <td>{{ task.cars_on_loading }}</td>
+                <td class="cars">{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
                 <td>{{ task.hours }}</td>
             </tr>
@@ -55,10 +56,10 @@
                 <td>{{ task.cargo_type }}</td>
                 <td>{{ task.cargo_quality }}</td>
                 <td>{{ task.total_plan }}</td>
-                <td class="to-finish-total-plan">{ task.to_finish_total_plan}}</td>
+                <td class="to-finish-total-plan">{{ task.to_finish_total_plan}}</td>
                 <td>{{ task.daily_plan }}</td>
                 <td class="daily_shipped">{{ task.daily_shipped }}</td>
-                <td>{{ task.cars_on_loading }}</td>
+                <td class="cars">{{ task.cars_on_loading }}</td>
                 <td>{{ task.destination }}</td>
                 <td>{{ task.hours }}</td>
             </tr>

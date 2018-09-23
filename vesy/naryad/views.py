@@ -65,24 +65,25 @@ def naryad(request):
         point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0) - datetime.timedelta(days=1)
     else:
         point = datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
-
+    list_tasks_id = []
     for task in tasks:
-        task.cars_on_loading = 0
-        records = Record.objects.filter(task=task, date2__gt=task.date, status='2')
+        records = Record.objects.filter(task=task, date2__gt=task.date, status=2)
         shipped = records.aggregate(Sum('weight'))['weight__sum']
         task.shipped = shipped if shipped else 0
         daily = records.filter(date2__gt=point).aggregate(Sum('weight'))['weight__sum']
         task.daily_shipped = daily if daily else 0
-        task.cars_on_loading = Record.objects.filter(task=task, date2__gt=task.date, status='1').count()
+        # task.cars_on_loading = Record.objects.filter(task=task, date2__gt=task.date, status=1).count()
         task.finish()
         task.save()
+        list_tasks_id.append(str(task.id))
+
     last_changes = LastChanges.objects.latest('id')
     dostavka = tasks.filter(employer=Employer.objects.get(name='ООО Машпром'))
     samovyvoz = tasks.exclude(employer=Employer.objects.get(name='ООО Машпром'))
     cargo_type = {str(i["id"]): i["name"] for i in RubbleRoot.objects.values() if i["name"] is not None}
     cargo_quality = {str(i["id"]): i["name"] for i in RubbleQuality.objects.values() if i["name"] is not None}
     return render(request, 'naryad/index.html', {'dostavka': dostavka, 'samovyvoz': samovyvoz, 'cargo_type': cargo_type,
-                                                 'cargo_quality': cargo_quality, 'last_changes_id': last_changes.id})
+                                                 'cargo_quality': cargo_quality, 'last_changes_id': last_changes.id, 'list_tasks_id': ','.join(list_tasks_id)})
 
 
 @login_required
@@ -187,6 +188,5 @@ def update(request):
         tmp = set()
         for rec in recs:
             tmp.add(rec.task)
-
         return JsonResponse(serialize('json', tmp), safe=False)
 
