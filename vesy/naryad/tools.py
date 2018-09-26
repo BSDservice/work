@@ -18,11 +18,17 @@ def save_data(data):
         for item in recs:
             if tab == 'Contractor':
                 for tab_split in [Consignee, Employer, Consignor, Contractor]:
-                    entry = tab_split(name=item)
-                    entry.save()
+                    try:  # временная мера (выдаёт ошибку при одинаковом названии организаций)
+                        entry = tab_split(name=item)
+                        entry.save()
+                    except Exception:
+                        pass
             else:
-                entry = obj_dict[tab](name=item)
-                entry.save()
+                try:  # временная мера (выдаёт ошибку при одинаковом названии организаций)
+                    entry = obj_dict[tab](name=item)
+                    entry.save()
+                except Exception:
+                    pass
             n += 1
     return n
 
@@ -129,6 +135,8 @@ def records_sync(data):
 
         task_to_log = LastChanges(task=task, date=datetime.datetime.now())
         if task.cars_on_loading < 0: task.cars_on_loading = 0
+        if rec[8] in ('Склад', 'Договор 1', 'Договор 13'):
+            task.status = '1'
         task.save()
         obj.save()
         task_to_log.save()
