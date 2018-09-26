@@ -100,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -121,3 +120,5 @@ LOGIN_REDIRECT_URL = '/'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+DATA_UPLOAD_MAX_MEMORY_SIZE = 131072000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 90000

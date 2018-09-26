@@ -34,8 +34,9 @@ def records_sync(data):
     if 'delete' in data.keys():
         fetch_del = Record.objects.filter(wesy_id__in=data['delete'])
         for rec in fetch_del:
-            rec.task.cars_on_loading -= 1
-            rec.task.save()
+            if rec.status == 1:
+                rec.task.cars_on_loading -= 1
+                rec.task.save()
             rec.status = 'D'
             rec.save()
 
@@ -115,7 +116,8 @@ def records_sync(data):
             obj.wesy_id = rec[15]
             obj.status = rec[18]
             obj.task = task
-            task.cars_on_loading -= 1
+            if rec[18] == 2:
+                task.cars_on_loading -= 1
         except Record.DoesNotExist:
             obj = Record(date1=datetime.datetime(year=rec[12][0], month=rec[12][1], day=rec[12][2], hour=rec[12][3],
                                                  minute=rec[12][4], second=rec[12][5], microsecond=rec[12][6]),
@@ -126,6 +128,7 @@ def records_sync(data):
                 task.cars_on_loading += 1
 
         task_to_log = LastChanges(task=task, date=datetime.datetime.now())
+        if task.cars_on_loading < 0: task.cars_on_loading = 0
         task.save()
         obj.save()
         task_to_log.save()

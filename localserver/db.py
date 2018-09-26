@@ -146,6 +146,10 @@ class SyncDB:
                 rec[13] = (rec[14].year, rec[14].month, rec[14].day, rec[15].hour, rec[15].minute, rec[15].second, rec[15].microsecond)
             del rec[14], rec[14]
 
+    def check_date(self):
+        if self.start_date - datetime.datetime.now() > datetime.timedelta(hours=32):
+            self.start_date = datetime.datetime.now() - datetime.timedelta(days=1, hours=5, minutes=20)
+
 
 if __name__ == '__main__':
     with open('data.log', 'a') as log:
