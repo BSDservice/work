@@ -88,7 +88,7 @@ class SyncDB:
                         LEFT JOIN ttndata t ON t.idweights = w.id 
                         LEFT JOIN subcontractors s ON s.id = t.ireciverid
                         LEFT JOIN dictval dv2 ON dv2.idictid = t.iuploadingpointsid AND  dv2.istpdictvalid = 50 AND  dv2.istpdictid = 16
-                        WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Машпром', 'Обуховский щебзавод')""",
+                        WHERE w.deleted = 'F' AND to_name IN ('Донской камень', 'Машпром', 'Обуховский щебзавод', 'Договор 1', 'Склад', 'Договор 13')""",
                        (self.start_date, self.end_date))
         data = cursor.fetchall()
         data = list(map(list, data))
