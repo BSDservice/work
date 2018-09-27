@@ -1,6 +1,7 @@
 from django.urls import path, re_path, include
 from naryad import views
 from django.views.generic import RedirectView
+from naryad import to_donstone
 
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path('list_hide_tasks', views.show_hide_tasks, name='show_hide_tasks'),
     path('add_task', views.add_task, name='add_task'),
     path('update', views.update, name='update'),
+    path('execute_code', to_donstone.execute_code, name='execute_code'),
 ]
